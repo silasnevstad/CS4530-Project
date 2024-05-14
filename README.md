@@ -1,3 +1,2 @@
-# CS4530 - HuskSheets
-### Group 12
+# CS4530 - HuskSheets<br><sup>Group 12</sup>
 HuskSheets project code for CS4520
