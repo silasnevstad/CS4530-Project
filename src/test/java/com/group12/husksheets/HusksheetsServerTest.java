@@ -64,7 +64,6 @@ public class HusksheetsServerTest {
         Result result = gson.fromJson(getResponse(connection), Result.class);
         assertTrue(result.success);
         assertFalse(result.value.isEmpty());
-//        assertEquals("testPublisher2", result.value.get(0).publisher);
     }
 
     @Test
@@ -156,7 +155,7 @@ public class HusksheetsServerTest {
         URL url = new URL("https://localhost:9443" + endpoint);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod(method);
-        connection.setRequestProperty("Authorization", "Basic " + Base64.getEncoder().encodeToString("testPublisher:testPublisher".getBytes(StandardCharsets.UTF_8)));
+        connection.setRequestProperty("Authorization", "Basic " + Base64.getEncoder().encodeToString("user1:password1".getBytes(StandardCharsets.UTF_8)));
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
 
