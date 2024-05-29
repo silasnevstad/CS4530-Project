@@ -4,6 +4,7 @@ import static spark.Spark.*;
 
 import com.group12.husksheets.controllers.HusksheetsController;
 import com.group12.husksheets.services.PublisherService;
+import com.group12.husksheets.services.UserService;
 
 public class HusksheetsServer {
 
@@ -13,6 +14,7 @@ public class HusksheetsServer {
         secure("src/main/resources/keystore.jks", "husksheets", null, null);
 
         PublisherService publisherService = new PublisherService();
-        new HusksheetsController(publisherService);
+        UserService userService = new UserService();
+        new HusksheetsController(publisherService, userService);
     }
 }

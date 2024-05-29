@@ -1,4 +1,4 @@
-.PHONY: test build docker
+.PHONY: test build server docker
 
 test:
 	mvn test
@@ -7,7 +7,7 @@ build:
 	mvn clean package
 
 server:
-	 mvn exec:java -Dexec.mainClass="com.group12.husksheets.HusksheetsServer"
+	mvn exec:java -Dexec.mainClass="com.group12.husksheets.HusksheetsServer"
 
 docker:
 	docker build -t husksheets-server .
