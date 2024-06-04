@@ -5,6 +5,9 @@ import com.group12.husksheets.models.Publisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -16,7 +19,24 @@ public class PublisherServiceTest {
 
     @BeforeEach
     public void setUp() {
+        DatabaseService.setDatabaseUrl("jdbc:sqlite:husksheetsTest.db");
+        DatabaseService.initializeDatabase();
         publisherService = new PublisherService();
+        clearDatabase();
+    }
+
+    private void clearDatabase() {
+        try (Connection conn = DatabaseService.getConnection()) {
+            String[] tables = {"updates", "sheets", "publishers"};
+            for (String table : tables) {
+                String sql = "DELETE FROM " + table;
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -52,9 +72,10 @@ public class PublisherServiceTest {
         publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheetToDelete");
         assertTrue(publisherService.deleteSheet("publisher", "sheetToDelete"));
-        // Deleting the same sheet again should return false
+        // Deleting the same sheet (nonexistent) again should return false
         assertFalse(publisherService.deleteSheet("publisher", "sheetToDelete"));
         // Deleting a sheet for a nonexistent publisher should return false
+        publisherService.createSheet("publisher", "sheetToDelete");
         assertFalse(publisherService.deleteSheet("nonexistentPublisher", "sheetToDelete"));
     }
 
@@ -78,7 +99,7 @@ public class PublisherServiceTest {
         assertTrue(publisherService.updatePublished("publisher", "sheet", "payload1"));
         assertTrue(publisherService.updatePublished("publisher", "sheet", "payload2"));
 
-        List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", null);
+        List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(2, updates.size());
         assertEquals("payload1", updates.get(0).payload);
         assertEquals("payload2", updates.get(1).payload);
@@ -94,7 +115,7 @@ public class PublisherServiceTest {
         assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload1"));
         assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload2"));
 
-        List<Argument> updates = publisherService.getUpdatesForSubscription("publisher", "sheet", null);
+        List<Argument> updates = publisherService.getUpdatesForSubscription("publisher", "sheet", "0");
         assertEquals(2, updates.size());
         assertEquals("payload1", updates.get(0).payload);
         assertEquals("payload2", updates.get(1).payload);
@@ -113,7 +134,7 @@ public class PublisherServiceTest {
 
         updates.forEach(update -> publisherService.updateSubscription("publisher", "sheet", update.payload));
 
-        List<Argument> retrievedUpdates = publisherService.getUpdatesForSubscription("publisher", "sheet", null);
+        List<Argument> retrievedUpdates = publisherService.getUpdatesForSubscription("publisher", "sheet", "0");
         assertEquals(2, retrievedUpdates.size());
         assertEquals("payload1", retrievedUpdates.get(0).payload);
         assertEquals("payload2", retrievedUpdates.get(1).payload);
@@ -139,7 +160,7 @@ public class PublisherServiceTest {
 
         updates.forEach(update -> publisherService.updatePublished("publisher", "sheet", update.payload));
 
-        List<Argument> retrievedUpdates = publisherService.getUpdatesForPublished("publisher", "sheet", null);
+        List<Argument> retrievedUpdates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(2, retrievedUpdates.size());
         assertEquals("payload1", retrievedUpdates.get(0).payload);
         assertEquals("payload2", retrievedUpdates.get(1).payload);
@@ -162,20 +183,20 @@ public class PublisherServiceTest {
 
     @Test
     public void testGetUpdatesForNonExistentPublisher() {
-        List<Argument> updates = publisherService.getUpdatesForSubscription("nonExistentPublisher", "sheet", null);
+        List<Argument> updates = publisherService.getUpdatesForSubscription("nonExistentPublisher", "sheet", "0");
         assertEquals(0, updates.size());
 
-        updates = publisherService.getUpdatesForPublished("nonExistentPublisher", "sheet", null);
+        updates = publisherService.getUpdatesForPublished("nonExistentPublisher", "sheet", "0");
         assertEquals(0, updates.size());
     }
 
     @Test
     public void testGetUpdatesForNonExistentSheet() {
         publisherService.addPublisher("publisher");
-        List<Argument> updates = publisherService.getUpdatesForSubscription("publisher", "nonExistentSheet", null);
+        List<Argument> updates = publisherService.getUpdatesForSubscription("publisher", "nonExistentSheet", "0");
         assertEquals(0, updates.size());
 
-        updates = publisherService.getUpdatesForPublished("publisher", "nonExistentSheet", null);
+        updates = publisherService.getUpdatesForPublished("publisher", "nonExistentSheet", "0");
         assertEquals(0, updates.size());
     }
 
@@ -187,7 +208,7 @@ public class PublisherServiceTest {
         String specialPayload = "payload!@#$%^&*()_+{}|:\"<>?`~-=[]\\;',./";
         assertTrue(publisherService.updatePublished("publisher", "sheet", specialPayload));
 
-        List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", null);
+        List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(1, updates.size());
         assertEquals(specialPayload, updates.get(0).payload);
     }
@@ -200,7 +221,7 @@ public class PublisherServiceTest {
         String longPayload = "a".repeat(10000); // 10,000 characters long
         assertTrue(publisherService.updatePublished("publisher", "sheet", longPayload));
 
-        List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", null);
+        List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(1, updates.size());
         assertEquals(longPayload, updates.get(0).payload);
     }

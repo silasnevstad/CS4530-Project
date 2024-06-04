@@ -3,6 +3,7 @@ package com.group12.husksheets;
 import static org.junit.jupiter.api.Assertions.*;
 import static spark.Spark.*;
 
+import com.group12.husksheets.services.DatabaseService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,9 @@ import com.group12.husksheets.models.Result;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Base64;
 import java.io.OutputStream;
 import java.io.InputStream;
@@ -23,9 +27,24 @@ public class HusksheetsServerTest {
     private static final Gson gson = new Gson();
 
     @BeforeAll
-    public static void setUp() throws Exception {
-        HusksheetsServer.main(null);
+    public static void setUp() {
+        HusksheetsServer.startServer("jdbc:sqlite:husksheetsTest.db");
         setupTrustStore();
+        clearDatabase();
+    }
+
+    private static void clearDatabase() {
+        try (Connection conn = DatabaseService.getConnection()) {
+            String[] tables = {"updates", "sheets", "publishers"};
+            for (String table : tables) {
+                String sql = "DELETE FROM " + table;
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @AfterAll
@@ -174,7 +193,7 @@ public class HusksheetsServerTest {
         }
     }
 
-    private static void setupTrustStore() throws Exception {
+    private static void setupTrustStore() {
         String trustStorePath = "src/main/resources/truststore.jks";
         String trustStorePassword = "husksheets";
 

@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Husksheets Server is a REST API server is implemented using Spark.
+The Husksheets Server is a REST API server implemented using Spark.
+The server handles operations related to publishers, sheets, updates, and subscriptions,
+with data persistence managed through an SQLite database.
 
 ## Components
 
@@ -16,8 +18,15 @@ and `payload`.
 
 ### Services
 
-- `PublisherService`: Handles operations related to publishers and their sheets. Manages updates and subscriptions.
-- `UserService`: Manages user authentication and authorization.
+- `PublisherService`: Handles operations related to publishers and their sheets. 
+Manages updates and subscriptions.
+Uses an SQLite database for data persistence.
+- `UserService`: Manages user authentication and authorization, ensuring only authorized users can access the server.
+
+### Database Service
+`DatabaseService`: Manages the connection to the SQLite database and initializes the database schema.
+Provides methods to get a database connection and set the database URL for different environments
+(production vs. testing).
 
 ### Controllers
 
@@ -44,8 +53,19 @@ The server uses Basic authentication to secure endpoints.
 All endpoints require an `Authorization` header with the username and password encoded in Base64.
 The set of client names and passwords is pre-assigned.
 
+## Data Persistence
+
+Data is persisted in an SQLite database. The database contains the following tables:
+- `publishers`: Stores publisher names.
+- `sheets`: Stores sheet names associated with publishers.
+- `updates`: Stores updates and subscription requests for sheets, 
+including a timestamp for ordering updates and a type indicating whether an update is a publication or a subscription.
+
 ## Testing
 
+Tests are designed to run against a test (or an in-memory) database to avoid modifying the production database.
+
 JUnit 5 is used for unit testing the server endpoints. 
+
 Mockito is used for mocking dependencies and verifying interactions in tests.
 
