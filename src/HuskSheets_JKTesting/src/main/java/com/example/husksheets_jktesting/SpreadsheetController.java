@@ -20,31 +20,25 @@ public class SpreadsheetController {
                 TableColumn.CellEditEvent<ObservableList<String>, String> cellEditEvent =
                         (TableColumn.CellEditEvent<ObservableList<String>, String>) event;
                 String newValue = cellEditEvent.getNewValue();
-                System.out.print("newValue: " + newValue);
-
 
                 int row = cellEditEvent.getTablePosition().getRow();
                 int col = cellEditEvent.getTablePosition().getColumn();
 
-                tableView.getItems().get(row).set(col, newValue);
+                // Strip formatting markers before processing
+                String strippedValue = stripMarkers(newValue);
 
-                System.out.println(tableView.getItems().get(row));
-                System.out.println(tableView.getItems().get(row).get(col));
-
-
-
-                if (newValue.startsWith("=")) {
-                    System.out.println("= detected");
-
-
+                if (strippedValue.startsWith("=")) {
                     FormulaParser parser = new FormulaParser(tableView);
-                    String result = parser.evaluateFormula(newValue);
-                    System.out.println(result);
-
-
+                    String result = parser.evaluateFormula(strippedValue);
                     tableView.getItems().get(row).set(col, result);
+                } else {
+                    tableView.getItems().get(row).set(col, newValue);
                 }
             });
         }
+    }
+
+    private String stripMarkers(String text) {
+        return text.replaceAll("\\*B\\*|\\*I\\*|\\*F\\d+\\*|\\*C\\w+\\*|\\*T\\w+\\*", "");
     }
 }

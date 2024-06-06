@@ -1,3 +1,8 @@
+<<<<<<< Updated upstream
+=======
+package com.example.husksheets_jktesting;
+
+>>>>>>> Stashed changes
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -9,30 +14,58 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+<<<<<<< Updated upstream
+import javafx.stage.Stage;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
+=======
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+>>>>>>> Stashed changes
+
 public class SpreadsheetApp extends Application {
     private Button colorButton;
     private Button textColorButton;
+<<<<<<< Updated upstream
+=======
+    private Set<CellSpan> mergedCells = new HashSet<>();
+>>>>>>> Stashed changes
 
     @Override
     public void start(Stage primaryStage) {
         TableView<ObservableList<String>> tableView = new TableView<>();
+        tableView.getSelectionModel().setCellSelectionEnabled(true); // Enable cell selection
+        tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE); // Enable multiple selection
 
         // Set up columns and data
-        setupTableColumns(tableView);
+        setupTableColumns(tableView, 7); // Setting up 27 columns
         populateTableData(tableView);
 
         new SpreadsheetController(tableView);
 
+<<<<<<< Updated upstream
         // Create toolbar with bold and italicize buttons and a text field
         ToolBar toolBar = new ToolBar();
         Button boldButton = new Button("Bold");
         Button italicButton = new Button("Italicize");
         TextField fontSizeField = new TextField();
         fontSizeField.setPromptText("Font Size");
+=======
+        // Create toolbar with bold, italicize, merge buttons, font size field, and import button
+        ToolBar toolBar = new ToolBar();
+        Button boldButton = new Button("Bold");
+        Button italicButton = new Button("Italicize");
+        Button mergeButton = new Button("Merge"); // Merge button
+        TextField fontSizeField = new TextField();
+        fontSizeField.setPromptText("Font Size");
+        Button importButton = new Button("Import CSV"); // Import button
+>>>>>>> Stashed changes
 
         colorButton = new Button();
         colorButton.setStyle("-fx-background-color: black; -fx-min-width: 20px; -fx-min-height: 20px;");
@@ -54,7 +87,11 @@ public class SpreadsheetApp extends Application {
 
         textColorButton.setOnAction(event -> textColorMenu.show(textColorButton, Side.BOTTOM, 0, 0));
 
+<<<<<<< Updated upstream
         toolBar.getItems().addAll(boldButton, italicButton, fontSizeField, colorButton, textColorButton);
+=======
+        toolBar.getItems().addAll(boldButton, italicButton, mergeButton, fontSizeField, colorButton, textColorButton, importButton);
+>>>>>>> Stashed changes
 
         // Handle bold button action
         boldButton.setOnAction(event -> toggleFormatting(tableView, "*B*"));
@@ -64,6 +101,7 @@ public class SpreadsheetApp extends Application {
 
         // Handle font size change
         fontSizeField.setOnAction(event -> {
+<<<<<<< Updated upstream
             int rowIndex = tableView.getSelectionModel().getSelectedIndex();
             TablePosition pos = tableView.getFocusModel().getFocusedCell();
             int colIndex = pos.getColumn();
@@ -79,6 +117,13 @@ public class SpreadsheetApp extends Application {
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid font size: " + fontSizeField.getText());
                 }
+=======
+            try {
+                int fontSize = Integer.parseInt(fontSizeField.getText());
+                applyFontSize(tableView, fontSize);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid font size: " + fontSizeField.getText());
+>>>>>>> Stashed changes
             }
         });
 
@@ -90,31 +135,56 @@ public class SpreadsheetApp extends Application {
         blueTextItem.setOnAction(event -> applyTextColor(tableView, "blue", textColorButton));
         yellowTextItem.setOnAction(event -> applyTextColor(tableView, "yellow", textColorButton));
 
+<<<<<<< Updated upstream
         VBox vbox = new VBox(toolBar, tableView);
         Scene scene = new Scene(vbox, 800, 600);
+=======
+        // Handle merge button action
+        mergeButton.setOnAction(event -> mergeSelectedCells(tableView));
+
+        // Handle import button action
+        importButton.setOnAction(event -> importCSV(tableView));
+
+        VBox vbox = new VBox(toolBar, tableView);
+        ScrollPane scrollPane = new ScrollPane(vbox); // Add scroll pane for horizontal scrolling
+        scrollPane.setFitToWidth(true);
+
+        Scene scene = new Scene(scrollPane, 800, 600);
+>>>>>>> Stashed changes
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("Spreadsheet Application");
         primaryStage.show();
     }
 
-    private void setupTableColumns(TableView<ObservableList<String>> tableView) {
-        for (int i = 0; i < 5; i++) {
-            TableColumn<ObservableList<String>, String> column = new TableColumn<>("Column " + (char) ('A' + i));
+    private void setupTableColumns(TableView<ObservableList<String>> tableView, int columnCount) {
+        for (int i = 0; i < columnCount; i++) {
+            TableColumn<ObservableList<String>, String> column = new TableColumn<>(ColumnNameUtils.getColumnName(i));
             final int colIndex = i;
             column.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().get(colIndex)));
             column.setCellFactory(new Callback<>() {
                 @Override
                 public TableCell<ObservableList<String>, String> call(TableColumn<ObservableList<String>, String> param) {
+<<<<<<< Updated upstream
                     return new CustomTextFieldTableCell();
+=======
+                    return new CustomTextFieldTableCell(colIndex, mergedCells);
+>>>>>>> Stashed changes
                 }
             });
             column.setOnEditCommit(event -> {
                 int rowIndex = event.getTablePosition().getRow();
+<<<<<<< Updated upstream
                 int colIndex = event.getTablePosition().getColumn();
                 ObservableList<String> row = tableView.getItems().get(rowIndex);
                 String newValue = event.getNewValue();
                 row.set(colIndex, newValue);
+=======
+                int columnIndex = event.getTablePosition().getColumn();
+                ObservableList<String> row = tableView.getItems().get(rowIndex);
+                String newValue = event.getNewValue();
+                row.set(columnIndex, newValue);
+>>>>>>> Stashed changes
             });
             tableView.getColumns().add(column);
         }
@@ -123,8 +193,13 @@ public class SpreadsheetApp extends Application {
     private void populateTableData(TableView<ObservableList<String>> tableView) {
         for (int i = 0; i < 10; i++) {
             ObservableList<String> row = FXCollections.observableArrayList();
+<<<<<<< Updated upstream
             for (int j = 0; j < 5; j++) {
                 row.add(String.valueOf((i + 1) * (j + 1))); // Populate with numeric values
+=======
+            for (int j = 0; j < 7; j++) { // Populate 27 columns with numeric values
+                row.add(String.valueOf((i + 1) * (j + 1)));
+>>>>>>> Stashed changes
             }
             tableView.getItems().add(row);
         }
@@ -137,6 +212,7 @@ public class SpreadsheetApp extends Application {
     }
 
     private String toRgbString(Color color) {
+<<<<<<< Updated upstream
         return String.format("rgb(%d,%d,%d)", (int)(color.getRed()*255), (int)(color.getGreen()*255), (int)(color.getBlue()*255));
     }
 
@@ -168,6 +244,37 @@ public class SpreadsheetApp extends Application {
             tableView.getColumns().get(colIndex).setVisible(true);
             textColorButton.setStyle("-fx-background-color: " + color + "; -fx-min-width: 20px; -fx-min-height: 20px;");
         }
+=======
+        return String.format("rgb(%d,%d,%d)", (int) (color.getRed() * 255), (int) (color.getGreen() * 255), (int) (color.getBlue() * 255));
+    }
+
+    private void applyCellColor(TableView<ObservableList<String>> tableView, String color, Button colorButton) {
+        applyFormattingToSelectedCells(tableView, cellValue -> applyMarker(cellValue, "C" + color));
+        colorButton.setStyle("-fx-background-color: " + color + "; -fx-min-width: 20px; -fx-min-height: 20px;");
+    }
+
+    private void applyTextColor(TableView<ObservableList<String>> tableView, String color, Button textColorButton) {
+        applyFormattingToSelectedCells(tableView, cellValue -> applyMarker(cellValue, "T" + color));
+        textColorButton.setStyle("-fx-background-color: " + color + "; -fx-min-width: 20px; -fx-min-height: 20px;");
+    }
+
+    private void applyFontSize(TableView<ObservableList<String>> tableView, int fontSize) {
+        applyFormattingToSelectedCells(tableView, cellValue -> applyMarker(cellValue, "F" + fontSize));
+    }
+
+    private void applyFormattingToSelectedCells(TableView<ObservableList<String>> tableView, CellFormatter formatter) {
+        for (TablePosition pos : tableView.getSelectionModel().getSelectedCells()) {
+            int rowIndex = pos.getRow();
+            int colIndex = pos.getColumn();
+
+            if (rowIndex >= 0 && colIndex >= 0) {
+                ObservableList<String> row = tableView.getItems().get(rowIndex);
+                String cellValue = row.get(colIndex);
+                row.set(colIndex, formatter.format(cellValue));
+            }
+        }
+        tableView.refresh(); // Refresh the table to apply the changes
+>>>>>>> Stashed changes
     }
 
     private String applyMarker(String text, String marker) {
@@ -179,19 +286,81 @@ public class SpreadsheetApp extends Application {
         return text.replaceAll("\\*" + markerType + "\\w+\\*", "");
     }
 
+<<<<<<< Updated upstream
+=======
+    private void mergeSelectedCells(TableView<ObservableList<String>> tableView) {
+        ObservableList<TablePosition> selectedCells = tableView.getSelectionModel().getSelectedCells();
+        if (selectedCells.isEmpty()) {
+            return;
+        }
+
+        int startRow = selectedCells.get(0).getRow();
+        int startCol = selectedCells.get(0).getColumn();
+        int endRow = startRow;
+        int endCol = startCol;
+
+        for (TablePosition pos : selectedCells) {
+            int rowIndex = pos.getRow();
+            int colIndex = pos.getColumn();
+            if (rowIndex > endRow) endRow = rowIndex;
+            if (colIndex > endCol) endCol = colIndex;
+        }
+
+        mergedCells.add(new CellSpan(startRow, startCol, endRow, endCol));
+
+        StringBuilder mergedContent = new StringBuilder();
+        for (TablePosition pos : selectedCells) {
+            int rowIndex = pos.getRow();
+            int colIndex = pos.getColumn();
+            ObservableList<String> row = tableView.getItems().get(rowIndex);
+            String cellValue = row.get(colIndex);
+            if (!cellValue.isEmpty()) {
+                if (mergedContent.length() > 0) {
+                    mergedContent.append(" ");
+                }
+                mergedContent.append(cellValue);
+            }
+        }
+
+        ObservableList<String> startRowList = tableView.getItems().get(startRow);
+        startRowList.set(startCol, mergedContent.toString());
+        tableView.refresh();
+    }
+
+    private void importCSV(TableView<ObservableList<String>> tableView) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File selectedFile = fileChooser.showOpenDialog(null);
+        if (selectedFile != null) {
+            CSVImporter.importCSV(selectedFile, tableView);
+        }
+    }
+
+>>>>>>> Stashed changes
     public static void main(String[] args) {
         launch(args);
     }
 
+<<<<<<< Updated upstream
     // Custom TableCell to handle bold, italic, font size, background color, and text color formatting
     static class CustomTextFieldTableCell extends TextFieldTableCell<ObservableList<String>, String> {
+=======
+    // Custom TableCell to handle bold, italic, font size, background color, text color formatting, and cell spanning
+    static class CustomTextFieldTableCell extends TextFieldTableCell<ObservableList<String>, String> {
+        private final int columnIndex;
+        private final Set<CellSpan> mergedCells;
+>>>>>>> Stashed changes
         private boolean isBold;
         private boolean isItalic;
         private int fontSize = -1;
         private String bgColor = "";
         private String textColor = "";
 
+<<<<<<< Updated upstream
         public CustomTextFieldTableCell() {
+=======
+        public CustomTextFieldTableCell(int columnIndex, Set<CellSpan> mergedCells) {
+>>>>>>> Stashed changes
             super(new StringConverter<>() {
                 @Override
                 public String toString(String object) {
@@ -206,6 +375,11 @@ public class SpreadsheetApp extends Application {
                     return string;
                 }
             });
+<<<<<<< Updated upstream
+=======
+            this.columnIndex = columnIndex;
+            this.mergedCells = mergedCells;
+>>>>>>> Stashed changes
         }
 
         @Override
@@ -236,9 +410,35 @@ public class SpreadsheetApp extends Application {
                 }
                 setStyle(style);
                 setText(item.replaceAll("\\*B\\*|\\*I\\*|\\*F\\d+\\*|\\*C\\w+\\*|\\*T\\w+\\*", "")); // Remove markers for display
+<<<<<<< Updated upstream
             } else {
                 setStyle(""); // Reset style
                 setText(null);
+=======
+
+                // Handle cell spanning
+                boolean inSpan = false;
+                for (CellSpan span : mergedCells) {
+                    if (span.isWithinSpan(getIndex(), columnIndex)) {
+                        inSpan = true;
+                        if (span.isTopLeftCell(getIndex(), columnIndex)) {
+                            setText(item.replaceAll("\\*B\\*|\\*I\\*|\\*F\\d+\\*|\\*C\\w+\\*|\\*T\\w+\\*", ""));
+                            setVisible(true);
+                        } else {
+                            setText(null);
+                            setVisible(false);
+                        }
+                        break;
+                    }
+                }
+                if (!inSpan) {
+                    setVisible(true);
+                }
+            } else {
+                setStyle(""); // Reset style
+                setText(null);
+                setVisible(true);
+>>>>>>> Stashed changes
             }
         }
 
@@ -246,7 +446,11 @@ public class SpreadsheetApp extends Application {
         public void startEdit() {
             super.startEdit();
             if (getItem() != null) {
+<<<<<<< Updated upstream
                 setText(getItem().replaceAll("\\*B\\*|\\*I\\*|\\*F\\d+\\*|\\*C\\w+\\*|\\*T\\w+\\*", "")); // Remove markers for editing
+=======
+                setText(stripMarkers(getItem())); // Remove markers for editing
+>>>>>>> Stashed changes
             }
         }
 
@@ -277,10 +481,18 @@ public class SpreadsheetApp extends Application {
             }
             return newValue;
         }
+<<<<<<< Updated upstream
+=======
+
+        private String stripMarkers(String text) {
+            return text.replaceAll("\\*B\\*|\\*I\\*|\\*F\\d+\\*|\\*C\\w+\\*|\\*T\\w+\\*", "");
+        }
+>>>>>>> Stashed changes
     }
 
     // Toggle formatting for bold or italic
     private void toggleFormatting(TableView<ObservableList<String>> tableView, String marker) {
+<<<<<<< Updated upstream
         int rowIndex = tableView.getSelectionModel().getSelectedIndex();
         TablePosition pos = tableView.getFocusModel().getFocusedCell();
         int colIndex = pos.getColumn();
@@ -297,5 +509,21 @@ public class SpreadsheetApp extends Application {
             tableView.getColumns().get(colIndex).setVisible(true);
         }
     }
+=======
+        applyFormattingToSelectedCells(tableView, cellValue -> {
+            if (!cellValue.contains(marker)) {
+                return marker + cellValue; // Add marker
+            } else {
+                return cellValue.replace(marker, ""); // Remove marker
+            }
+        });
+    }
+}
+
+// Functional interface for cell formatting
+@FunctionalInterface
+interface CellFormatter {
+    String format(String cellValue);
+>>>>>>> Stashed changes
 }
 
