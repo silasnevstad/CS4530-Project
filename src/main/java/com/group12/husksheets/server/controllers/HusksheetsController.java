@@ -1,16 +1,16 @@
-package com.group12.husksheets.controllers;
+package com.group12.husksheets.server.controllers;
 
 import static spark.Spark.*;
 
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Result;
-import com.group12.husksheets.services.PublisherService;
+import com.group12.husksheets.server.services.PublisherService;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.group12.husksheets.services.UserService;
+import com.group12.husksheets.server.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;

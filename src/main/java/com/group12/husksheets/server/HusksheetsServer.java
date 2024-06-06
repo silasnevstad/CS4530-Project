@@ -1,11 +1,11 @@
-package com.group12.husksheets;
+package com.group12.husksheets.server;
 
 import static spark.Spark.*;
 
-import com.group12.husksheets.controllers.HusksheetsController;
-import com.group12.husksheets.services.DatabaseService;
-import com.group12.husksheets.services.PublisherService;
-import com.group12.husksheets.services.UserService;
+import com.group12.husksheets.server.controllers.HusksheetsController;
+import com.group12.husksheets.server.services.DatabaseService;
+import com.group12.husksheets.server.services.PublisherService;
+import com.group12.husksheets.server.services.UserService;
 
 public class HusksheetsServer {
 

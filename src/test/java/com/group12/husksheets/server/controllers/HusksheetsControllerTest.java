@@ -1,10 +1,10 @@
-package com.group12.husksheets.controllers;
+package com.group12.husksheets.server.controllers;
 
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Publisher;
 import com.group12.husksheets.models.Result;
-import com.group12.husksheets.services.PublisherService;
-import com.group12.husksheets.services.UserService;
+import com.group12.husksheets.server.services.PublisherService;
+import com.group12.husksheets.server.services.UserService;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

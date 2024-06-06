@@ -80,7 +80,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.group12.husksheets.HusksheetsServer</mainClass>
+                    <mainClass>com.group12.husksheets.server.HusksheetsServer</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -92,6 +92,14 @@
                         <javax.net.ssl.trustStore>${project.basedir}/src/main/resources/truststore.jks</javax.net.ssl.trustStore>
                         <javax.net.ssl.trustStorePassword>husksheets</javax.net.ssl.trustStorePassword>
                     </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

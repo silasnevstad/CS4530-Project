@@ -1,9 +1,9 @@
-package com.group12.husksheets;
+package com.group12.husksheets.server;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static spark.Spark.*;
 
-import com.group12.husksheets.services.DatabaseService;
+import com.group12.husksheets.server.services.DatabaseService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

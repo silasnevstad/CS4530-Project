@@ -1,4 +1,4 @@
-package com.group12.husksheets.services;
+package com.group12.husksheets.server.services;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
