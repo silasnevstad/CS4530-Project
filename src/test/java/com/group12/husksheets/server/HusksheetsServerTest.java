@@ -70,6 +70,39 @@ public class HusksheetsServerTest {
     }
 
     @Test
+    public void testRegisterEmptyPublisher() throws IOException {
+        Argument arg = new Argument();
+        arg.publisher = "";
+        String jsonArg = gson.toJson(arg);
+
+        HttpURLConnection connection = createConnection("/api/v1/register", "POST", jsonArg);
+        int responseCode = connection.getResponseCode();
+        assertEquals(200, responseCode);
+
+        Result result = gson.fromJson(getResponse(connection), Result.class);
+        assertFalse(result.success);
+        assertEquals("Invalid publisher name", result.message);
+    }
+
+    @Test
+    public void testRegisterExistingPublisher() throws IOException {
+        Argument arg = new Argument();
+        arg.publisher = "testPublisher1";
+        String jsonArg = gson.toJson(arg);
+
+        HttpURLConnection connection = createConnection("/api/v1/register", "POST", jsonArg);
+        assertEquals(200, connection.getResponseCode());
+
+        connection = createConnection("/api/v1/register", "POST", jsonArg);
+        int responseCode = connection.getResponseCode();
+        assertEquals(200, responseCode);
+
+        Result result = gson.fromJson(getResponse(connection), Result.class);
+        assertFalse(result.success);
+        assertEquals("Publisher already exists", result.message);
+    }
+
+    @Test
     public void testGetPublishers() throws IOException {
         Argument registerArg = new Argument();
         registerArg.publisher = "testPublisher2";
@@ -111,6 +144,29 @@ public class HusksheetsServerTest {
     }
 
     @Test
+    public void testCreateSheetEmptySheet() throws IOException {
+        Argument registerArg = new Argument();
+        registerArg.publisher = "testPublisher3";
+        String registerJsonArg = gson.toJson(registerArg);
+
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        assertEquals(200, registerConnection.getResponseCode());
+
+        Argument createSheetArg = new Argument();
+        createSheetArg.publisher = "testPublisher3";
+        createSheetArg.sheet = "";
+        String createSheetJsonArg = gson.toJson(createSheetArg);
+
+        HttpURLConnection connection = createConnection("/api/v1/createSheet", "POST", createSheetJsonArg);
+        int responseCode = connection.getResponseCode();
+        assertEquals(200, responseCode);
+
+        Result result = gson.fromJson(getResponse(connection), Result.class);
+        assertFalse(result.success);
+        assertEquals("Invalid input", result.message);
+    }
+
+    @Test
     public void testDeleteSheet() throws IOException {
         Argument registerArg = new Argument();
         registerArg.publisher = "testPublisher4";
@@ -142,6 +198,37 @@ public class HusksheetsServerTest {
     }
 
     @Test
+    public void testDeleteSheetEmptySheet() throws IOException {
+        Argument registerArg = new Argument();
+        registerArg.publisher = "testPublisher4";
+        String registerJsonArg = gson.toJson(registerArg);
+
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        assertEquals(200, registerConnection.getResponseCode());
+
+        Argument createSheetArg = new Argument();
+        createSheetArg.publisher = "testPublisher4";
+        createSheetArg.sheet = "testSheet";
+        String createSheetJsonArg = gson.toJson(createSheetArg);
+
+        HttpURLConnection createSheetConnection = createConnection("/api/v1/createSheet", "POST", createSheetJsonArg);
+        assertEquals(200, createSheetConnection.getResponseCode());
+
+        Argument deleteSheetArg = new Argument();
+        deleteSheetArg.publisher = "testPublisher4";
+        deleteSheetArg.sheet = "";
+        String deleteSheetJsonArg = gson.toJson(deleteSheetArg);
+
+        HttpURLConnection connection = createConnection("/api/v1/deleteSheet", "POST", deleteSheetJsonArg);
+        int responseCode = connection.getResponseCode();
+        assertEquals(200, responseCode);
+
+        Result result = gson.fromJson(getResponse(connection), Result.class);
+        assertFalse(result.success);
+        assertEquals("Invalid input", result.message);
+    }
+
+    @Test
     public void testGetSheets() throws IOException {
         Argument registerArg = new Argument();
         registerArg.publisher = "testPublisher5";
@@ -170,6 +257,21 @@ public class HusksheetsServerTest {
         assertTrue(result.success);
         assertFalse(result.value.isEmpty());
         assertEquals("testSheet", result.value.get(0).sheet);
+    }
+
+    @Test
+    public void testGetSheetsEmptyPublisher() throws IOException {
+        Argument getSheetsArg = new Argument();
+        getSheetsArg.publisher = "";
+        String getSheetsJsonArg = gson.toJson(getSheetsArg);
+
+        HttpURLConnection connection = createConnection("/api/v1/getSheets", "POST", getSheetsJsonArg);
+        int responseCode = connection.getResponseCode();
+        assertEquals(200, responseCode);
+
+        Result result = gson.fromJson(getResponse(connection), Result.class);
+        assertFalse(result.success);
+        assertEquals("Invalid input", result.message);
     }
 
     private HttpURLConnection createConnection(String endpoint, String method, String jsonBody) throws IOException {

@@ -42,7 +42,7 @@ public class HusksheetsControllerTest {
     }
 
     @Test
-    public void testRegisterPublisher() {
+    public void testRegisterPublisherSuccess() {
         Request req = mock(Request.class);
         Response res = mock(Response.class);
 
@@ -51,6 +51,32 @@ public class HusksheetsControllerTest {
 
         String result = husksheetsController.handleRegister(req, res);
         Result expected = new Result(true, "Publisher registered", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testRegisterPublisherAlreadyExists() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("existingPublisher", null, null, null)));
+        when(publisherService.addPublisher("existingPublisher")).thenReturn(false);
+
+        String result = husksheetsController.handleRegister(req, res);
+        Result expected = new Result(false, "Publisher already exists", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testRegisterPublisherEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("", null, null, null)));
+        when(publisherService.addPublisher("")).thenReturn(false);
+
+        String result = husksheetsController.handleRegister(req, res);
+        Result expected = new Result(false, "Publisher already exists", null);
         assertEquals(gson.toJson(expected), result);
     }
 
@@ -87,6 +113,32 @@ public class HusksheetsControllerTest {
     }
 
     @Test
+    public void testCreateSheetEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "", null, null)));
+        when(publisherService.createSheet("publisher", "")).thenReturn(false);
+
+        String result = husksheetsController.handleCreateSheet(req, res);
+        Result expected = new Result(false, "Sheet already exists", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testCreateSheetNull() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", null, null, null)));
+        when(publisherService.createSheet("publisher", null)).thenReturn(false);
+
+        String result = husksheetsController.handleCreateSheet(req, res);
+        Result expected = new Result(false, "Sheet already exists", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
     public void testDeleteSheet() {
         Request req = mock(Request.class);
         Response res = mock(Response.class);
@@ -96,6 +148,32 @@ public class HusksheetsControllerTest {
 
         String result = husksheetsController.handleDeleteSheet(req, res);
         Result expected = new Result(true, "Sheet deleted", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testDeleteSheetEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "", null, null)));
+        when(publisherService.deleteSheet("publisher", "")).thenReturn(false);
+
+        String result = husksheetsController.handleDeleteSheet(req, res);
+        Result expected = new Result(false, "Sheet does not exist", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testDeleteSheetNull() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", null, null, null)));
+        when(publisherService.deleteSheet("publisher", null)).thenReturn(false);
+
+        String result = husksheetsController.handleDeleteSheet(req, res);
+        Result expected = new Result(false, "Sheet does not exist", null);
         assertEquals(gson.toJson(expected), result);
     }
 
@@ -120,6 +198,32 @@ public class HusksheetsControllerTest {
     }
 
     @Test
+    public void testGetSheetsEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "", null, null)));
+        when(publisherService.getSheets("publisher")).thenReturn(new ArrayList<>());
+
+        String result = husksheetsController.handleGetSheets(req, res);
+        Result expected = new Result(true, "Success", new ArrayList<>());
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testGetSheetsNull() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", null, null, null)));
+        when(publisherService.getSheets("publisher")).thenReturn(null);
+
+        String result = husksheetsController.handleGetSheets(req, res);
+        Result expected = new Result(false, "Publisher does not exist", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
     public void testGetUpdatesForSubscription() {
         Request req = mock(Request.class);
         Response res = mock(Response.class);
@@ -137,6 +241,22 @@ public class HusksheetsControllerTest {
             payloadBuilder.append(update.payload).append("\n");
         }
         Argument expectedArg = new Argument("publisher", "sheet", "2", payloadBuilder.toString().trim());
+        Result expected = new Result(true, "Success", List.of(expectedArg));
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testGetUpdatesForSubscriptionEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        List<Argument> updates = new ArrayList<>();
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "sheet", "0", null)));
+        when(publisherService.getUpdatesForSubscription("publisher", "sheet", "0")).thenReturn(updates);
+
+        String result = husksheetsController.handleGetUpdatesForSubscription(req, res);
+        Argument expectedArg = new Argument("publisher", "sheet", "", "");
         Result expected = new Result(true, "Success", List.of(expectedArg));
         assertEquals(gson.toJson(expected), result);
     }
@@ -164,6 +284,22 @@ public class HusksheetsControllerTest {
     }
 
     @Test
+    public void testGetUpdatesForPublishedEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        List<Argument> updates = new ArrayList<>();
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "sheet", "0", null)));
+        when(publisherService.getUpdatesForPublished("publisher", "sheet", "0")).thenReturn(updates);
+
+        String result = husksheetsController.handleGetUpdatesForPublished(req, res);
+        Argument expectedArg = new Argument("publisher", "sheet", "", "");
+        Result expected = new Result(true, "Success", List.of(expectedArg));
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
     public void testUpdatePublished() {
         Request req = mock(Request.class);
         Response res = mock(Response.class);
@@ -177,6 +313,32 @@ public class HusksheetsControllerTest {
     }
 
     @Test
+    public void testUpdatePublishedEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "sheet", null, "")));
+        when(publisherService.updatePublished("publisher", "sheet", "")).thenReturn(false);
+
+        String result = husksheetsController.handleUpdatePublished(req, res);
+        Result expected = new Result(false, "Publisher or sheet does not exist", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testUpdatePublishedNull() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "sheet", null, null)));
+        when(publisherService.updatePublished("publisher", "sheet", null)).thenReturn(false);
+
+        String result = husksheetsController.handleUpdatePublished(req, res);
+        Result expected = new Result(false, "Publisher or sheet does not exist", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
     public void testUpdateSubscription() {
         Request req = mock(Request.class);
         Response res = mock(Response.class);
@@ -186,6 +348,32 @@ public class HusksheetsControllerTest {
 
         String result = husksheetsController.handleUpdateSubscription(req, res);
         Result expected = new Result(true, "Update subscription", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testUpdateSubscriptionEmptyString() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "sheet", null, "")));
+        when(publisherService.updateSubscription("publisher", "sheet", "")).thenReturn(false);
+
+        String result = husksheetsController.handleUpdateSubscription(req, res);
+        Result expected = new Result(false, "Publisher or sheet does not exist", null);
+        assertEquals(gson.toJson(expected), result);
+    }
+
+    @Test
+    public void testUpdateSubscriptionNull() {
+        Request req = mock(Request.class);
+        Response res = mock(Response.class);
+
+        when(req.body()).thenReturn(gson.toJson(new Argument("publisher", "sheet", null, null)));
+        when(publisherService.updateSubscription("publisher", "sheet", null)).thenReturn(false);
+
+        String result = husksheetsController.handleUpdateSubscription(req, res);
+        Result expected = new Result(false, "Publisher or sheet does not exist", null);
         assertEquals(gson.toJson(expected), result);
     }
 }

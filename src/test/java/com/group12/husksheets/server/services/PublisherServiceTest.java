@@ -49,6 +49,16 @@ public class PublisherServiceTest {
     }
 
     @Test
+    public void testAddPublisherEmptyString() {
+        assertFalse(publisherService.addPublisher(""));
+    }
+
+    @Test
+    public void testAddPublisherNull() {
+        assertFalse(publisherService.addPublisher(null));
+    }
+
+    @Test
     public void testGetPublishers() {
         publisherService.addPublisher("publisher1");
         publisherService.addPublisher("publisher2");
@@ -60,25 +70,65 @@ public class PublisherServiceTest {
     }
 
     @Test
-    public void testCreateSheet() {
+    public void testCreateSheetSuccess() {
         publisherService.addPublisher("publisher");
         assertTrue(publisherService.createSheet("publisher", "newSheet"));
-        // Creating the same sheet again should return false
-        assertFalse(publisherService.createSheet("publisher", "newSheet"));
-        // Creating a sheet for a nonexistent publisher should return false
-        assertFalse(publisherService.createSheet("nonexistentPublisher", "newSheet"));
     }
 
     @Test
-    public void testDeleteSheet() {
+    public void testCreateSheetNonExistentPublisher() {
+        assertFalse(publisherService.createSheet("nonExistentPublisher", "sheet"));
+    }
+
+    @Test
+    public void testCreateSheetAlreadyExists() {
+        publisherService.addPublisher("publisher");
+        publisherService.createSheet("publisher", "sheet");
+        assertFalse(publisherService.createSheet("publisher", "sheet"));
+    }
+
+    @Test
+    public void testCreateSheetEmptyString() {
+        publisherService.addPublisher("publisher");
+        assertFalse(publisherService.createSheet("publisher", ""));
+    }
+
+    @Test
+    public void testCreateSheetNull() {
+        publisherService.addPublisher("publisher");
+        assertFalse(publisherService.createSheet("publisher", null));
+    }
+
+    @Test
+    public void testDeleteSheetSuccess() {
         publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheetToDelete");
         assertTrue(publisherService.deleteSheet("publisher", "sheetToDelete"));
-        // Deleting the same sheet (nonexistent) again should return false
-        assertFalse(publisherService.deleteSheet("publisher", "sheetToDelete"));
-        // Deleting a sheet for a nonexistent publisher should return false
+    }
+
+    @Test
+    public void testDeleteSheetNonExistentSheet() {
+        publisherService.addPublisher("publisher");
+        assertFalse(publisherService.deleteSheet("publisher", "nonExistentSheet"));
+    }
+
+    @Test
+    public void testDeleteSheetNonExistentPublisher() {
+        publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheetToDelete");
-        assertFalse(publisherService.deleteSheet("nonexistentPublisher", "sheetToDelete"));
+        assertFalse(publisherService.deleteSheet("nonExistentPublisher", "sheetToDelete"));
+    }
+
+    @Test
+    public void testDeleteSheetEmptyString() {
+        publisherService.addPublisher("publisher");
+        assertFalse(publisherService.deleteSheet("publisher", ""));
+    }
+
+    @Test
+    public void testDeleteSheetNull() {
+        publisherService.addPublisher("publisher");
+        assertFalse(publisherService.deleteSheet("publisher", null));
     }
 
     @Test
@@ -91,6 +141,24 @@ public class PublisherServiceTest {
         assertEquals(2, sheets.size());
         assertTrue(sheets.contains("sheet1"));
         assertTrue(sheets.contains("sheet2"));
+    }
+
+    @Test
+    public void testGetSheetsForNonExistentPublisher() {
+        List<String> sheets = publisherService.getSheets("nonExistentPublisher");
+        assertEquals(0, sheets.size());
+    }
+
+    @Test
+    public void testGetSheetsForEmptyStringPublisher() {
+        List<String> sheets = publisherService.getSheets("");
+        assertEquals(0, sheets.size());
+    }
+
+    @Test
+    public void testGetSheetsForNullPublisher() {
+        List<String> sheets = publisherService.getSheets(null);
+        assertEquals(0, sheets.size());
     }
 
     @Test
@@ -123,6 +191,25 @@ public class PublisherServiceTest {
         assertEquals("payload2", updates.get(1).payload);
         assertNotNull(updates.get(0).id);
         assertNotNull(updates.get(1).id);
+    }
+
+    @Test
+    public void testUpdateEmptyInputs() {
+        publisherService.addPublisher("publisher");
+        publisherService.createSheet("publisher", "sheet");
+
+        assertFalse(publisherService.updatePublished("publisher", "sheet", ""));
+        assertFalse(publisherService.updatePublished("publisher", "sheet", null));
+        assertFalse(publisherService.updatePublished("publisher", "", "payload"));
+        assertFalse(publisherService.updatePublished("publisher", null, "payload"));
+        assertFalse(publisherService.updatePublished("", "sheet", "payload"));
+        assertFalse(publisherService.updatePublished(null, "sheet", "payload"));
+        assertFalse(publisherService.updateSubscription("publisher", "sheet", ""));
+        assertFalse(publisherService.updateSubscription("publisher", "sheet", null));
+        assertFalse(publisherService.updateSubscription("publisher", "", "payload"));
+        assertFalse(publisherService.updateSubscription("publisher", null, "payload"));
+        assertFalse(publisherService.updateSubscription("", "sheet", "payload"));
+        assertFalse(publisherService.updateSubscription(null, "sheet", "payload"));
     }
 
     @Test
@@ -178,9 +265,40 @@ public class PublisherServiceTest {
     }
 
     @Test
-    public void testDeleteNonExistentSheet() {
+    public void testGetUpdatesInvalidInputs() {
         publisherService.addPublisher("publisher");
-        assertFalse(publisherService.deleteSheet("publisher", "nonExistentSheet"));
+        publisherService.createSheet("publisher", "sheet");
+
+        List<Argument> updates = new ArrayList<>();
+        updates.add(new Argument("publisher", "sheet", "1", "payload1"));
+        updates.add(new Argument("publisher", "sheet", "2", "payload2"));
+
+        updates.forEach(update -> publisherService.updatePublished("publisher", "sheet", update.payload));
+        updates.forEach(update -> publisherService.updateSubscription("publisher", "sheet", update.payload));
+
+        List<Argument> retrievedUpdates = publisherService.getUpdatesForSubscription("", "sheet", "0");
+        assertEquals(0, retrievedUpdates.size());
+
+        retrievedUpdates = publisherService.getUpdatesForPublished("", "sheet", "0");
+        assertEquals(0, retrievedUpdates.size());
+
+        retrievedUpdates = publisherService.getUpdatesForSubscription(null, "sheet", "0");
+        assertEquals(0, retrievedUpdates.size());
+
+        retrievedUpdates = publisherService.getUpdatesForPublished(null, "sheet", "0");
+        assertEquals(0, retrievedUpdates.size());
+
+        retrievedUpdates = publisherService.getUpdatesForSubscription("publisher", "", "0");
+        assertEquals(0, retrievedUpdates.size());
+
+        retrievedUpdates = publisherService.getUpdatesForPublished("publisher", "", "0");
+        assertEquals(0, retrievedUpdates.size());
+
+        retrievedUpdates = publisherService.getUpdatesForSubscription("publisher", null, "0");
+        assertEquals(0, retrievedUpdates.size());
+
+        retrievedUpdates = publisherService.getUpdatesForPublished("publisher", null, "0");
+        assertEquals(0, retrievedUpdates.size());
     }
 
     @Test

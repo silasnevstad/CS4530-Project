@@ -24,13 +24,24 @@ public class HusksheetsController {
     private final UserService userService;
     private final Gson gson = new Gson();
 
+    /**
+     * Constructor for HusksheetsController.
+     * Sets up the controller with publisher and user services.
+     *
+     * @param publisherService The service for handling publisher-related operations.
+     * @param userService The service for handling user-related (authentication) operations.
+     */
     public HusksheetsController(PublisherService publisherService, UserService userService) {
         this.publisherService = publisherService;
         this.userService = userService;
         setupEndpoints();
     }
 
+    /**
+     * Sets up all the API endpoints and their corresponding handlers.
+     */
     private void setupEndpoints() {
+        // Middleware to check for valid authorization header
         before((request, response) -> {
             String authHeader = request.headers("Authorization");
             if (authHeader == null || !userService.isValidUser(authHeader)) {
@@ -38,6 +49,7 @@ public class HusksheetsController {
             }
         });
 
+        // API endpoints
         post("/api/v1/register", this::handleRegister);
         get("/api/v1/getPublishers", this::handleGetPublishers);
         post("/api/v1/createSheet", this::handleCreateSheet);
@@ -49,8 +61,19 @@ public class HusksheetsController {
         post("/api/v1/updateSubscription", this::handleUpdateSubscription);
     }
 
+    /**
+     * Handles the registration of a new publisher.
+     *
+     * @param req The request object containing the registration data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response indicating the success or failure of the operation.
+     */
     public String handleRegister(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher)) {
+            logger.warn("Invalid input for publisher registration: {}", arg.publisher);
+            return gson.toJson(new Result(false, "Invalid publisher name", null));
+        }
         boolean success = publisherService.addPublisher(arg.publisher);
         if (!success) {
             logger.warn("Publisher {} already exists", arg.publisher);
@@ -60,6 +83,13 @@ public class HusksheetsController {
         return gson.toJson(new Result(true, "Publisher registered", null));
     }
 
+    /**
+     * Handles the retrieval of all publishers.
+     *
+     * @param req The request object.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response containing the list of publishers.
+     */
     public String handleGetPublishers(Request req, Response res) {
         List<Argument> publisherList = new ArrayList<>();
         publisherService.getPublishers().forEach((name, publisher) -> {
@@ -71,8 +101,19 @@ public class HusksheetsController {
         return gson.toJson(result);
     }
 
+    /**
+     * Handles the creation of a new sheet for a publisher.
+     *
+     * @param req The request object containing the sheet creation data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response indicating the success or failure of the operation.
+     */
     public String handleCreateSheet(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+            logger.warn("Invalid input for sheet creation: publisher={}, sheet={}", arg.publisher, arg.sheet);
+            return gson.toJson(new Result(false, "Invalid input", null));
+        }
         boolean success = publisherService.createSheet(arg.publisher, arg.sheet);
         if (!success) {
             logger.warn("Sheet {} already exists for publisher {}", arg.sheet, arg.publisher);
@@ -82,8 +123,19 @@ public class HusksheetsController {
         return gson.toJson(new Result(true, "Sheet created", null));
     }
 
+    /**
+     * Handles the deletion of a sheet for a publisher.
+     *
+     * @param req The request object containing the sheet deletion data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response indicating the success or failure of the operation.
+     */
     public String handleDeleteSheet(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+            logger.warn("Invalid input for sheet deletion: publisher={}, sheet={}", arg.publisher, arg.sheet);
+            return gson.toJson(new Result(false, "Invalid input", null));
+        }
         boolean success = publisherService.deleteSheet(arg.publisher, arg.sheet);
         if (!success) {
             logger.warn("Sheet {} does not exist for publisher {}", arg.sheet, arg.publisher);
@@ -93,8 +145,19 @@ public class HusksheetsController {
         return gson.toJson(new Result(true, "Sheet deleted", null));
     }
 
+    /**
+     * Handles the retrieval of all sheets for a publisher.
+     *
+     * @param req The request object containing the publisher data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response containing the list of sheets.
+     */
     public String handleGetSheets(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher)) {
+            logger.warn("Invalid input for getting sheets: publisher={}", arg.publisher);
+            return gson.toJson(new Result(false, "Invalid input", null));
+        }
         List<String> sheets = publisherService.getSheets(arg.publisher);
         if (sheets == null) {
             logger.warn("Publisher {} does not exist", arg.publisher);
@@ -111,20 +174,53 @@ public class HusksheetsController {
         return gson.toJson(result);
     }
 
+    /**
+     * Handles the retrieval of updates for a subscribed sheet.
+     *
+     * @param req The request object containing the subscription data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response containing the list of updates.
+     */
     public String handleGetUpdatesForSubscription(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+            logger.warn("Invalid input for getting updates for subscription: publisher={}, sheet={}", arg.publisher, arg.sheet);
+            return gson.toJson(new Result(false, "Invalid input", null));
+        }
         List<Argument> updates = publisherService.getUpdatesForSubscription(arg.publisher, arg.sheet, arg.id);
         return makeUpdatesPayloadResp(arg, updates);
     }
 
+    /**
+     * Handles the retrieval of updates for a published sheet.
+     *
+     * @param req The request object containing the publication data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response containing the list of updates.
+     */
     public String handleGetUpdatesForPublished(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+            logger.warn("Invalid input for getting updates for published: publisher={}, sheet={}", arg.publisher, arg.sheet);
+            return gson.toJson(new Result(false, "Invalid input", null));
+        }
         List<Argument> updates = publisherService.getUpdatesForPublished(arg.publisher, arg.sheet, arg.id);
         return makeUpdatesPayloadResp(arg, updates);
     }
 
+    /**
+     * Handles the update of a published sheet.
+     *
+     * @param req The request object containing the update data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response indicating the success or failure of the operation.
+     */
     public String handleUpdatePublished(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+            logger.warn("Invalid input for updating published: publisher={}, sheet={}", arg.publisher, arg.sheet);
+            return gson.toJson(new Result(false, "Invalid input", null));
+        }
         boolean success = publisherService.updatePublished(arg.publisher, arg.sheet, arg.payload);
         return gson.toJson(new Result(
                 success,
@@ -133,8 +229,19 @@ public class HusksheetsController {
         ));
     }
 
+    /**
+     * Handles the update of a subscription for a sheet.
+     *
+     * @param req The request object containing the subscription update data.
+     * @param res The response object to be sent back to the client.
+     * @return JSON response indicating the success or failure of the operation.
+     */
     public String handleUpdateSubscription(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+            logger.warn("Invalid input for updating subscriptions: publisher={}, sheet={}", arg.publisher, arg.sheet);
+            return gson.toJson(new Result(false, "Invalid input", null));
+        }
         boolean success = publisherService.updateSubscription(arg.publisher, arg.sheet, arg.payload);
         return gson.toJson(new Result(
                 success,
@@ -143,6 +250,13 @@ public class HusksheetsController {
         ));
     }
 
+    /**
+     * Creates a JSON response for the updates' payload.
+     *
+     * @param arg The argument containing the initial request data.
+     * @param updates The list of updates to be included in the response.
+     * @return JSON response containing the updates' payload.
+     */
     private String makeUpdatesPayloadResp(Argument arg, List<Argument> updates) {
         String lastId = "";
         String payload = "";
