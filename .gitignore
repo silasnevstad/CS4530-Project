@@ -1,0 +1,11 @@
+# Maven target directory
+/target/
+
+# IntelliJ IDEA files
+/.idea/
+/*.iml
+
+# Keystore, truststore and certificate files
+src/main/resources/*.jks
+src/main/resources/*.cer
+src/main/resources/*.p12
