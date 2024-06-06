@@ -8,18 +8,31 @@ import javafx.scene.control.TableView;
  */
 public class SpreadsheetUtils {
     /**
-     * Gets the numeric value of a cell
+     * Converts a column name (e.g., "A", "AA") to a column index.
+     *
+     * @param columnName The column name
+     * @return The column index
+     */
+    private static int getColumnIndex(String columnName) {
+        int columnIndex = 0;
+        for (int i = 0; i < columnName.length(); i++) {
+            columnIndex = columnIndex * 26 + (columnName.charAt(i) - 'A' + 1);
+        }
+        return columnIndex - 1;
+    }
+
+    /**
+     * Gets the numeric value of a cell.
      *
      * @param tableView The TableView containing the cell
      * @param cellRef   The cell reference (e.g., "A1")
      * @return The numeric value of the cell
      */
     public static double getCellValue(TableView<ObservableList<String>> tableView, String cellRef) {
-        int row = Integer.parseInt(cellRef.substring(1)) - 1;
-        int col = getColumnIndex(cellRef.charAt(0));
-        if (cellRef.length() > 2) {
-            col = getColumnIndex(cellRef.charAt(0)) * 26 + getColumnIndex(cellRef.charAt(1));
-        }
+        int row = Integer.parseInt(cellRef.replaceAll("[^0-9]", "")) - 1;
+        String colString = cellRef.replaceAll("[0-9]", "");
+        int col = getColumnIndex(colString);
+
         String cellValue = tableView.getItems().get(row).get(col);
 
         // Strip formatting markers
@@ -32,18 +45,17 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Gets the text value of a cell
+     * Gets the text value of a cell.
      *
      * @param tableView The TableView containing the cell
      * @param cellRef   The cell reference (e.g., "A1")
      * @return The text value of the cell
      */
     public static String getCellText(TableView<ObservableList<String>> tableView, String cellRef) {
-        int row = Integer.parseInt(cellRef.substring(1)) - 1;
-        int col = getColumnIndex(cellRef.charAt(0));
-        if (cellRef.length() > 2) {
-            col = getColumnIndex(cellRef.charAt(0)) * 26 + getColumnIndex(cellRef.charAt(1));
-        }
+        int row = Integer.parseInt(cellRef.replaceAll("[^0-9]", "")) - 1;
+        String colString = cellRef.replaceAll("[0-9]", "");
+        int col = getColumnIndex(colString);
+
         String cellValue = tableView.getItems().get(row).get(col);
 
         // Strip formatting markers
@@ -51,7 +63,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Sums the values of multiple cells
+     * Sums the values of multiple cells.
      *
      * @param tableView The TableView containing the cells
      * @param cellRefs  The cell references to sum
@@ -66,7 +78,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Sums the values of a range of cells
+     * Sums the values of a range of cells.
      *
      * @param tableView The TableView containing the cells
      * @param range     The range of cells to sum (e.g., "A1:A10")
@@ -80,17 +92,10 @@ public class SpreadsheetUtils {
         String start = parts[0];
         String end = parts[1];
 
-        int startRow = Integer.parseInt(start.substring(1)) - 1;
-        int endRow = Integer.parseInt(end.substring(1)) - 1;
-        int startCol = getColumnIndex(start.charAt(0));
-        int endCol = getColumnIndex(end.charAt(0));
-
-        if (start.length() > 2) {
-            startCol = getColumnIndex(start.charAt(0)) * 26 + getColumnIndex(start.charAt(1));
-        }
-        if (end.length() > 2) {
-            endCol = getColumnIndex(end.charAt(0)) * 26 + getColumnIndex(end.charAt(1));
-        }
+        int startRow = Integer.parseInt(start.replaceAll("[^0-9]", "")) - 1;
+        int endRow = Integer.parseInt(end.replaceAll("[^0-9]", "")) - 1;
+        int startCol = getColumnIndex(start.replaceAll("[0-9]", ""));
+        int endCol = getColumnIndex(end.replaceAll("[0-9]", ""));
 
         double total = 0;
         for (int row = startRow; row <= endRow; row++) {
@@ -102,7 +107,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Finds the minimum value of multiple cells
+     * Finds the minimum value of multiple cells.
      *
      * @param tableView The TableView containing the cells
      * @param cellRefs  The cell references to find the minimum of
@@ -120,7 +125,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Finds the minimum value of a range of cells
+     * Finds the minimum value of a range of cells.
      *
      * @param tableView The TableView containing the cells
      * @param range     The range of cells to find the minimum of (e.g., "A1:A10")
@@ -134,17 +139,10 @@ public class SpreadsheetUtils {
         String start = parts[0];
         String end = parts[1];
 
-        int startRow = Integer.parseInt(start.substring(1)) - 1;
-        int endRow = Integer.parseInt(end.substring(1)) - 1;
-        int startCol = getColumnIndex(start.charAt(0));
-        int endCol = getColumnIndex(end.charAt(0));
-
-        if (start.length() > 2) {
-            startCol = getColumnIndex(start.charAt(0)) * 26 + getColumnIndex(start.charAt(1));
-        }
-        if (end.length() > 2) {
-            endCol = getColumnIndex(end.charAt(0)) * 26 + getColumnIndex(end.charAt(1));
-        }
+        int startRow = Integer.parseInt(start.replaceAll("[^0-9]", "")) - 1;
+        int endRow = Integer.parseInt(end.replaceAll("[^0-9]", "")) - 1;
+        int startCol = getColumnIndex(start.replaceAll("[0-9]", ""));
+        int endCol = getColumnIndex(end.replaceAll("[0-9]", ""));
 
         double minVal = Double.MAX_VALUE;
         for (int row = startRow; row <= endRow; row++) {
@@ -159,7 +157,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Finds the maximum value of multiple cells
+     * Finds the maximum value of multiple cells.
      *
      * @param tableView The TableView containing the cells
      * @param cellRefs  The cell references to find the maximum of
@@ -177,7 +175,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Finds the maximum value of a range of cells
+     * Finds the maximum value of a range of cells.
      *
      * @param tableView The TableView containing the cells
      * @param range     The range of cells to find the maximum of (e.g., "A1:A10")
@@ -191,17 +189,10 @@ public class SpreadsheetUtils {
         String start = parts[0];
         String end = parts[1];
 
-        int startRow = Integer.parseInt(start.substring(1)) - 1;
-        int endRow = Integer.parseInt(end.substring(1)) - 1;
-        int startCol = getColumnIndex(start.charAt(0));
-        int endCol = getColumnIndex(end.charAt(0));
-
-        if (start.length() > 2) {
-            startCol = getColumnIndex(start.charAt(0)) * 26 + getColumnIndex(start.charAt(1));
-        }
-        if (end.length() > 2) {
-            endCol = getColumnIndex(end.charAt(0)) * 26 + getColumnIndex(end.charAt(1));
-        }
+        int startRow = Integer.parseInt(start.replaceAll("[^0-9]", "")) - 1;
+        int endRow = Integer.parseInt(end.replaceAll("[^0-9]", "")) - 1;
+        int startCol = getColumnIndex(start.replaceAll("[0-9]", ""));
+        int endCol = getColumnIndex(end.replaceAll("[0-9]", ""));
 
         double maxVal = Double.MIN_VALUE;
         for (int row = startRow; row <= endRow; row++) {
@@ -216,7 +207,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Concatenates the values of multiple cells
+     * Concatenates the values of multiple cells.
      *
      * @param tableView The TableView containing the cells
      * @param cellRefs  The cell references to concatenate
@@ -231,7 +222,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Concatenates the values of a range of cells
+     * Concatenates the values of a range of cells.
      *
      * @param tableView The TableView containing the cells
      * @param range     The range of cells to concatenate (e.g., "A1:A10")
@@ -245,17 +236,10 @@ public class SpreadsheetUtils {
         String start = parts[0];
         String end = parts[1];
 
-        int startRow = Integer.parseInt(start.substring(1)) - 1;
-        int endRow = Integer.parseInt(end.substring(1)) - 1;
-        int startCol = getColumnIndex(start.charAt(0));
-        int endCol = getColumnIndex(end.charAt(0));
-
-        if (start.length() > 2) {
-            startCol = getColumnIndex(start.charAt(0)) * 26 + getColumnIndex(start.charAt(1));
-        }
-        if (end.length() > 2) {
-            endCol = getColumnIndex(end.charAt(0)) * 26 + getColumnIndex(end.charAt(1));
-        }
+        int startRow = Integer.parseInt(start.replaceAll("[^0-9]", "")) - 1;
+        int endRow = Integer.parseInt(end.replaceAll("[^0-9]", "")) - 1;
+        int startCol = getColumnIndex(start.replaceAll("[0-9]", ""));
+        int endCol = getColumnIndex(end.replaceAll("[0-9]", ""));
 
         StringBuilder result = new StringBuilder();
         for (int row = startRow; row <= endRow; row++) {
@@ -267,12 +251,12 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Evaluates an IF function
+     * Evaluates an IF function.
      *
-     * @param tableView  The TableView containing the cells
+     * @param tableView   The TableView containing the cells
      * @param conditionRef The cell reference for the condition
-     * @param trueRef    The cell reference for the true case
-     * @param falseRef   The cell reference for the false case
+     * @param trueRef     The cell reference for the true case
+     * @param falseRef    The cell reference for the false case
      * @return The result of the IF function
      */
     public static String ifFunction(TableView<ObservableList<String>> tableView, String conditionRef, String trueRef, String falseRef) {
@@ -291,7 +275,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Evaluates a DEBUG function
+     * Evaluates a DEBUG function.
      *
      * @param tableView  The TableView containing the cells
      * @param expression The cell reference for the expression to debug
@@ -302,7 +286,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Removes formatting markers from a cell value
+     * Removes formatting markers from a cell value.
      *
      * @param text The cell value
      * @return The cell value with the markers removed
@@ -312,17 +296,7 @@ public class SpreadsheetUtils {
     }
 
     /**
-     * Converts a column character to a column index
-     *
-     * @param columnChar The column character (e.g., 'A')
-     * @return The column index
-     */
-    private static int getColumnIndex(char columnChar) {
-        return columnChar - 'A';
-    }
-
-    /**
-     * Converts a column index to a column name
+     * Converts a column index to a column name.
      *
      * @param index The column index
      * @return The column name
