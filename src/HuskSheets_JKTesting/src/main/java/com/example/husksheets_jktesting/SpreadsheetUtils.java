@@ -120,6 +120,45 @@ public class SpreadsheetUtils {
     }
 
     /**
+     * Finds the minimum value of a range of cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param range     The range of cells to find the minimum of (e.g., "A1:A10")
+     * @return The minimum cell value
+     */
+    public static double minRange(TableView<ObservableList<String>> tableView, String range) {
+        String[] parts = range.split(":");
+        if (parts.length != 2) {
+            return Double.MAX_VALUE;
+        }
+        String start = parts[0];
+        String end = parts[1];
+
+        int startRow = Integer.parseInt(start.substring(1)) - 1;
+        int endRow = Integer.parseInt(end.substring(1)) - 1;
+        int startCol = getColumnIndex(start.charAt(0));
+        int endCol = getColumnIndex(end.charAt(0));
+
+        if (start.length() > 2) {
+            startCol = getColumnIndex(start.charAt(0)) * 26 + getColumnIndex(start.charAt(1));
+        }
+        if (end.length() > 2) {
+            endCol = getColumnIndex(end.charAt(0)) * 26 + getColumnIndex(end.charAt(1));
+        }
+
+        double minVal = Double.MAX_VALUE;
+        for (int row = startRow; row <= endRow; row++) {
+            for (int col = startCol; col <= endCol; col++) {
+                double cellValue = getCellValue(tableView, ColumnNameUtils.getColumnName(col) + (row + 1));
+                if (cellValue < minVal) {
+                    minVal = cellValue;
+                }
+            }
+        }
+        return minVal;
+    }
+
+    /**
      * Finds the maximum value of multiple cells
      *
      * @param tableView The TableView containing the cells
@@ -132,6 +171,45 @@ public class SpreadsheetUtils {
             double cellValue = getCellValue(tableView, cellRef);
             if (cellValue > maxVal) {
                 maxVal = cellValue;
+            }
+        }
+        return maxVal;
+    }
+
+    /**
+     * Finds the maximum value of a range of cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param range     The range of cells to find the maximum of (e.g., "A1:A10")
+     * @return The maximum cell value
+     */
+    public static double maxRange(TableView<ObservableList<String>> tableView, String range) {
+        String[] parts = range.split(":");
+        if (parts.length != 2) {
+            return Double.MIN_VALUE;
+        }
+        String start = parts[0];
+        String end = parts[1];
+
+        int startRow = Integer.parseInt(start.substring(1)) - 1;
+        int endRow = Integer.parseInt(end.substring(1)) - 1;
+        int startCol = getColumnIndex(start.charAt(0));
+        int endCol = getColumnIndex(end.charAt(0));
+
+        if (start.length() > 2) {
+            startCol = getColumnIndex(start.charAt(0)) * 26 + getColumnIndex(start.charAt(1));
+        }
+        if (end.length() > 2) {
+            endCol = getColumnIndex(end.charAt(0)) * 26 + getColumnIndex(end.charAt(1));
+        }
+
+        double maxVal = Double.MIN_VALUE;
+        for (int row = startRow; row <= endRow; row++) {
+            for (int col = startCol; col <= endCol; col++) {
+                double cellValue = getCellValue(tableView, ColumnNameUtils.getColumnName(col) + (row + 1));
+                if (cellValue > maxVal) {
+                    maxVal = cellValue;
+                }
             }
         }
         return maxVal;

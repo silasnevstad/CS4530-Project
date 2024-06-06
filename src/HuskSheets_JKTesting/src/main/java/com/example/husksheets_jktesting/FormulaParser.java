@@ -41,18 +41,40 @@ public class FormulaParser {
         if (formula.startsWith("=MIN(") && formula.endsWith(")")) {
             String cells = formula.substring(5, formula.length() - 1);
             String[] cellRefs = cells.split(",");
-            if (cellRefs.length >= 1) {
-                double result = SpreadsheetUtils.min(tableView, cellRefs);
-                return String.valueOf(result);
+            double result = Double.MAX_VALUE;
+            for (String cellRef : cellRefs) {
+                if (cellRef.contains(":")) {
+                    double minRange = SpreadsheetUtils.minRange(tableView, cellRef);
+                    if (minRange < result) {
+                        result = minRange;
+                    }
+                } else {
+                    double minValue = SpreadsheetUtils.min(tableView, cellRef);
+                    if (minValue < result) {
+                        result = minValue;
+                    }
+                }
             }
+            return String.valueOf(result);
         }
         if (formula.startsWith("=MAX(") && formula.endsWith(")")) {
             String cells = formula.substring(5, formula.length() - 1);
             String[] cellRefs = cells.split(",");
-            if (cellRefs.length >= 1) {
-                double result = SpreadsheetUtils.max(tableView, cellRefs);
-                return String.valueOf(result);
+            double result = Double.MIN_VALUE;
+            for (String cellRef : cellRefs) {
+                if (cellRef.contains(":")) {
+                    double maxRange = SpreadsheetUtils.maxRange(tableView, cellRef);
+                    if (maxRange > result) {
+                        result = maxRange;
+                    }
+                } else {
+                    double maxValue = SpreadsheetUtils.max(tableView, cellRef);
+                    if (maxValue > result) {
+                        result = maxValue;
+                    }
+                }
             }
+            return String.valueOf(result);
         }
         if (formula.startsWith("=CONCAT(") && formula.endsWith(")")) {
             String cells = formula.substring(8, formula.length() - 1);
