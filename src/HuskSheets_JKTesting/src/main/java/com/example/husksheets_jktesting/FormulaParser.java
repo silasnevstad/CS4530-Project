@@ -3,13 +3,27 @@ package com.example.husksheets_jktesting;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 
+/**
+ * Class to parse and evaluate spreadsheet formulas
+ */
 public class FormulaParser {
-    private final TableView<ObservableList<String>> tableView;
+    private final TableView<ObservableList<String>> tableView; // The TableView containing the spreadsheet data
 
+    /**
+     * Constructs a FormulaParser object
+     *
+     * @param tableView The TableView to parse formulas for
+     */
     public FormulaParser(TableView<ObservableList<String>> tableView) {
         this.tableView = tableView;
     }
 
+    /**
+     * Evaluates a formula
+     *
+     * @param formula The formula to evaluate
+     * @return The result of the formula
+     */
     public String evaluateFormula(String formula) {
         if (formula.startsWith("=SUM(") && formula.endsWith(")")) {
             String cells = formula.substring(5, formula.length() - 1);

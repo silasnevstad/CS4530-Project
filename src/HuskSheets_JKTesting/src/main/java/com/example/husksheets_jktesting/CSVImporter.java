@@ -12,7 +12,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * Utility class to import CSV data into a TableView
+ */
 public class CSVImporter {
+    /**
+     * Imports CSV data into a TableView
+     *
+     * @param file      The CSV file to import
+     * @param tableView The TableView to populate
+     */
     public static void importCSV(File file, TableView<ObservableList<String>> tableView) {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;

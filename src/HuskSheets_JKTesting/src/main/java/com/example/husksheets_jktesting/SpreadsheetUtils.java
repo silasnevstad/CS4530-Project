@@ -3,7 +3,17 @@ package com.example.husksheets_jktesting;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 
+/**
+ * Utility class for spreadsheet functions
+ */
 public class SpreadsheetUtils {
+    /**
+     * Gets the numeric value of a cell
+     *
+     * @param tableView The TableView containing the cell
+     * @param cellRef   The cell reference (e.g., "A1")
+     * @return The numeric value of the cell
+     */
     public static double getCellValue(TableView<ObservableList<String>> tableView, String cellRef) {
         int row = Integer.parseInt(cellRef.substring(1)) - 1;
         int col = getColumnIndex(cellRef.charAt(0));
@@ -21,6 +31,13 @@ public class SpreadsheetUtils {
         return 0.0; // Return 0 if the cell value is not a number
     }
 
+    /**
+     * Gets the text value of a cell
+     *
+     * @param tableView The TableView containing the cell
+     * @param cellRef   The cell reference (e.g., "A1")
+     * @return The text value of the cell
+     */
     public static String getCellText(TableView<ObservableList<String>> tableView, String cellRef) {
         int row = Integer.parseInt(cellRef.substring(1)) - 1;
         int col = getColumnIndex(cellRef.charAt(0));
@@ -33,6 +50,13 @@ public class SpreadsheetUtils {
         return stripMarkers(cellValue);
     }
 
+    /**
+     * Sums the values of multiple cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param cellRefs  The cell references to sum
+     * @return The sum of the cell values
+     */
     public static double sum(TableView<ObservableList<String>> tableView, String... cellRefs) {
         double total = 0;
         for (String cellRef : cellRefs) {
@@ -41,6 +65,13 @@ public class SpreadsheetUtils {
         return total;
     }
 
+    /**
+     * Sums the values of a range of cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param range     The range of cells to sum (e.g., "A1:A10")
+     * @return The sum of the cell values
+     */
     public static double sumRange(TableView<ObservableList<String>> tableView, String range) {
         String[] parts = range.split(":");
         if (parts.length != 2) {
@@ -70,6 +101,13 @@ public class SpreadsheetUtils {
         return total;
     }
 
+    /**
+     * Finds the minimum value of multiple cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param cellRefs  The cell references to find the minimum of
+     * @return The minimum cell value
+     */
     public static double min(TableView<ObservableList<String>> tableView, String... cellRefs) {
         double minVal = Double.MAX_VALUE;
         for (String cellRef : cellRefs) {
@@ -81,6 +119,13 @@ public class SpreadsheetUtils {
         return minVal;
     }
 
+    /**
+     * Finds the maximum value of multiple cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param cellRefs  The cell references to find the maximum of
+     * @return The maximum cell value
+     */
     public static double max(TableView<ObservableList<String>> tableView, String... cellRefs) {
         double maxVal = Double.MIN_VALUE;
         for (String cellRef : cellRefs) {
@@ -92,6 +137,13 @@ public class SpreadsheetUtils {
         return maxVal;
     }
 
+    /**
+     * Concatenates the values of multiple cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param cellRefs  The cell references to concatenate
+     * @return The concatenated cell values
+     */
     public static String concat(TableView<ObservableList<String>> tableView, String... cellRefs) {
         StringBuilder result = new StringBuilder();
         for (String cellRef : cellRefs) {
@@ -100,6 +152,13 @@ public class SpreadsheetUtils {
         return result.toString();
     }
 
+    /**
+     * Concatenates the values of a range of cells
+     *
+     * @param tableView The TableView containing the cells
+     * @param range     The range of cells to concatenate (e.g., "A1:A10")
+     * @return The concatenated cell values
+     */
     public static String concatRange(TableView<ObservableList<String>> tableView, String range) {
         String[] parts = range.split(":");
         if (parts.length != 2) {
@@ -129,6 +188,15 @@ public class SpreadsheetUtils {
         return result.toString();
     }
 
+    /**
+     * Evaluates an IF function
+     *
+     * @param tableView  The TableView containing the cells
+     * @param conditionRef The cell reference for the condition
+     * @param trueRef    The cell reference for the true case
+     * @param falseRef   The cell reference for the false case
+     * @return The result of the IF function
+     */
     public static String ifFunction(TableView<ObservableList<String>> tableView, String conditionRef, String trueRef, String falseRef) {
         double conditionValue;
         try {
@@ -144,18 +212,43 @@ public class SpreadsheetUtils {
         }
     }
 
+    /**
+     * Evaluates a DEBUG function
+     *
+     * @param tableView  The TableView containing the cells
+     * @param expression The cell reference for the expression to debug
+     * @return The value of the expression
+     */
     public static String debugFunction(TableView<ObservableList<String>> tableView, String expression) {
         return getCellText(tableView, expression);
     }
 
+    /**
+     * Removes formatting markers from a cell value
+     *
+     * @param text The cell value
+     * @return The cell value with the markers removed
+     */
     private static String stripMarkers(String text) {
         return text.replaceAll("\\*B\\*|\\*I\\*|\\*F\\d+\\*|\\*C\\w+\\*|\\*T\\w+\\*", "");
     }
 
+    /**
+     * Converts a column character to a column index
+     *
+     * @param columnChar The column character (e.g., 'A')
+     * @return The column index
+     */
     private static int getColumnIndex(char columnChar) {
         return columnChar - 'A';
     }
 
+    /**
+     * Converts a column index to a column name
+     *
+     * @param index The column index
+     * @return The column name
+     */
     public static String getColumnName(int index) {
         StringBuilder columnName = new StringBuilder();
         while (index >= 0) {

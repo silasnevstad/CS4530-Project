@@ -4,14 +4,25 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+/**
+ * Controller class for the spreadsheet
+ */
 public class SpreadsheetController {
-    private TableView<ObservableList<String>> tableView;
+    private TableView<ObservableList<String>> tableView; // The TableView containing the spreadsheet data
 
+    /**
+     * Constructs a SpreadsheetController object
+     *
+     * @param tableView The TableView to control
+     */
     public SpreadsheetController(TableView<ObservableList<String>> tableView) {
         this.tableView = tableView;
         initialize();
     }
 
+    /**
+     * Initializes the controller
+     */
     private void initialize() {
         tableView.setEditable(true);
 
@@ -38,6 +49,12 @@ public class SpreadsheetController {
         }
     }
 
+    /**
+     * Removes formatting markers from a cell value
+     *
+     * @param text The cell value
+     * @return The cell value with the markers removed
+     */
     private String stripMarkers(String text) {
         return text.replaceAll("\\*B\\*|\\*I\\*|\\*F\\d+\\*|\\*C\\w+\\*|\\*T\\w+\\*", "");
     }
