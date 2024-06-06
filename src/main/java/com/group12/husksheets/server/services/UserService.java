@@ -1,3 +1,5 @@
+// Owner: Silas Nevstad
+
 package com.group12.husksheets.server.services;
 
 import java.util.Base64;

@@ -1,3 +1,5 @@
+// Owner: Silas Nevstad
+
 package com.group12.husksheets.server.controllers;
 
 import static spark.Spark.*;
