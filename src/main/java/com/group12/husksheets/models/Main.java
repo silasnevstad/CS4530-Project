@@ -1,4 +1,3 @@
-package com.example.huskysheets2;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,15 +20,27 @@ import java.util.Stack;
 
 public class Main extends Application {
 
-  // Constants for the number of rows and columns
+  // Constants for initial number of rows and columns
   private static final int NUM_ROWS = 100;
   private static final int NUM_COLUMNS = 26;
+
+  // TableView to hold the spreadsheet data
   private TableView<ObservableList<SimpleStringProperty>> tableView;
+
+  // TextField to display and edit cell formulas
   private TextField formulaField;
+
+  // TextField for the title of the spreadsheet
   private TextField titleField;
+
+  // Stacks to manage undo and redo operations
   private Stack<EditAction> undoStack = new Stack<>();
   private Stack<EditAction> redoStack = new Stack<>();
+
+  // Clipboard content for cut/copy/paste operations
   private String clipboardContent = "";
+
+  // Maps to store various attributes of the cells
   private Map<String, String> formulas = new HashMap<>();
   private Map<String, Pos> alignments = new HashMap<>();
   private Map<String, String> fontSizes = new HashMap<>();
@@ -42,15 +53,15 @@ public class Main extends Application {
   public void start(Stage primaryStage) {
     BorderPane root = new BorderPane();
 
-    // Initialize the table view
+    // Initialize the TableView
     tableView = new TableView<>();
     tableView.setEditable(true);
 
-    // Create columns
+    // Create columns for the TableView
     for (int col = 0; col <= NUM_COLUMNS; col++) {
       TableColumn<ObservableList<SimpleStringProperty>, String> column;
       if (col == 0) {
-        // Create row number column
+        // Create the row number column
         column = new TableColumn<>("");
         column.setCellFactory(colFactory -> new TableCell<>() {
           @Override
@@ -84,7 +95,7 @@ public class Main extends Application {
       tableView.getColumns().add(column);
     }
 
-    // Create data rows
+    // Create data for the TableView
     ObservableList<ObservableList<SimpleStringProperty>> data = FXCollections.observableArrayList();
     for (int row = 0; row < NUM_ROWS; row++) {
       ObservableList<SimpleStringProperty> rowData = FXCollections.observableArrayList();
@@ -95,7 +106,7 @@ public class Main extends Application {
     }
     tableView.setItems(data);
 
-    // Initialize formula field for editing cell values
+    // Initialize the formula field
     formulaField = new TextField();
     formulaField.setEditable(true);
     formulaField.setOnAction(e -> {
@@ -124,7 +135,7 @@ public class Main extends Application {
 
     VBox topContainer = new VBox();
 
-    // Create title field for the spreadsheet
+    // Initialize the title field
     titleField = new TextField("Untitled Spreadsheet");
     titleField.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
     titleField.setEditable(true);
@@ -132,7 +143,7 @@ public class Main extends Application {
     HBox titleBox = new HBox(titleField);
     titleBox.setStyle("-fx-padding: 10px;");
 
-    // Create toolbar with various buttons and controls
+    // Initialize the toolbar with various controls
     ToolBar toolBar = new ToolBar();
     Button undoButton = new Button("Undo");
     Button redoButton = new Button("Redo");
@@ -150,13 +161,14 @@ public class Main extends Application {
     ColorPicker backgroundColorPicker = new ColorPicker();
     backgroundColorPicker.setOnAction(e -> changeBackgroundColor(backgroundColorPicker.getValue()));
 
-    // Set actions for the buttons
+    // Set actions for the toolbar buttons
     undoButton.setOnAction(e -> undo());
     redoButton.setOnAction(e -> redo());
     cutButton.setOnAction(e -> cut());
     copyButton.setOnAction(e -> copy());
     pasteButton.setOnAction(e -> paste());
 
+    // Add controls to the toolbar
     toolBar.getItems().addAll(undoButton, redoButton, cutButton, copyButton, pasteButton,
         new Label("Font:"), fontComboBox, new Label("Size:"), fontSizeField,
         new Label("Text Color:"), textColorPicker, new Label("Background Color:"), backgroundColorPicker);
@@ -166,16 +178,22 @@ public class Main extends Application {
     root.setTop(topContainer);
     root.setCenter(tableView);
 
-    Scene scene = new Scene(root, 800, 600);
+    Scene scene = new Scene(root);
     primaryStage.setScene(scene);
-    primaryStage.setTitle("Excel-Like Spreadsheet");
+    primaryStage.setTitle("HuskySheets");
+    primaryStage.setMaximized(true);
     primaryStage.show();
 
-    // Set user data for access in other methods
+    // Store reference to this instance for later access
     primaryStage.setUserData(this);
   }
 
-  // Method to generate column headers (A, B, C, ..., Z, AA, AB, etc.)
+  /**
+   * Generate a column header label based on the column index.
+   *
+   * @param index the column index
+   * @return the column header label
+   */
   private String getColumnHeader(int index) {
     StringBuilder sb = new StringBuilder();
     while (index >= 0) {
@@ -185,7 +203,9 @@ public class Main extends Application {
     return sb.toString();
   }
 
-  // Method to undo the last action
+  /**
+   * Undo the last action.
+   */
   private void undo() {
     if (!undoStack.isEmpty()) {
       EditAction action = undoStack.pop();
@@ -194,7 +214,9 @@ public class Main extends Application {
     }
   }
 
-  // Method to redo the last undone action
+  /**
+   * Redo the last undone action.
+   */
   private void redo() {
     if (!redoStack.isEmpty()) {
       EditAction action = redoStack.pop();
@@ -203,7 +225,9 @@ public class Main extends Application {
     }
   }
 
-  // Method to cut the selected cell's content
+  /**
+   * Cut the selected cell's content.
+   */
   private void cut() {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -215,7 +239,9 @@ public class Main extends Application {
     }
   }
 
-  // Method to copy the selected cell's content
+  /**
+   * Copy the selected cell's content.
+   */
   private void copy() {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -224,7 +250,9 @@ public class Main extends Application {
     }
   }
 
-  // Method to paste content into the selected cell
+  /**
+   * Paste the clipboard content into the selected cell.
+   */
   private void paste() {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -239,7 +267,12 @@ public class Main extends Application {
     }
   }
 
-  // Method to evaluate a cell's content as a formula
+  /**
+   * Evaluate the formula in a cell and update its value.
+   *
+   * @param row the row containing the cell
+   * @param column the column index of the cell
+   */
   private void evaluateCell(ObservableList<SimpleStringProperty> row, int column) {
     String cellKey = getCellKey(row, column);
     String formula = formulas.getOrDefault(cellKey, "");
@@ -247,25 +280,31 @@ public class Main extends Application {
       row.get(column).set("");
       return;
     }
-    if (!formula.startsWith("=")) {
-      row.get(column).set(formula);
-      return;
-    }
     try {
-      double result = ArithmeticParser.evaluate(formula.substring(1));
+      double result = ArithmeticParser.evaluate(formula);
       row.get(column).set(String.valueOf(result));
     } catch (Exception e) {
       row.get(column).set("#REF!");
     }
   }
 
-  // Method to generate a unique key for each cell based on its row and column
+  /**
+   * Generate a unique key for a cell based on its row and column.
+   *
+   * @param row the row containing the cell
+   * @param column the column index of the cell
+   * @return the unique key for the cell
+   */
   private String getCellKey(ObservableList<SimpleStringProperty> row, int column) {
     int rowIndex = tableView.getItems().indexOf(row);
     return rowIndex + "," + column;
   }
 
-  // Method to change the font of the selected cell
+  /**
+   * Change the font of the selected cell.
+   *
+   * @param font the new font to apply
+   */
   private void changeFont(String font) {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -278,7 +317,11 @@ public class Main extends Application {
     }
   }
 
-  // Method to change the font size of the selected cell
+  /**
+   * Change the font size of the selected cell.
+   *
+   * @param fontSize the new font size to apply
+   */
   private void changeFontSize(String fontSize) {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -291,7 +334,11 @@ public class Main extends Application {
     }
   }
 
-  // Method to change the text color of the selected cell
+  /**
+   * Change the text color of the selected cell.
+   *
+   * @param color the new text color to apply
+   */
   private void changeTextColor(Color color) {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -305,7 +352,11 @@ public class Main extends Application {
     }
   }
 
-  // Method to change the background color of the selected cell
+  /**
+   * Change the background color of the selected cell.
+   *
+   * @param color the new background color to apply
+   */
   private void changeBackgroundColor(Color color) {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -319,7 +370,11 @@ public class Main extends Application {
     }
   }
 
-  // Method to update the style of a cell based on its attributes
+  /**
+   * Update the style of a cell based on its attributes.
+   *
+   * @param cellKey the unique key of the cell
+   */
   private void updateCellStyle(String cellKey) {
     StringBuilder style = new StringBuilder();
     if (fontSizes.containsKey(cellKey)) {
@@ -338,7 +393,12 @@ public class Main extends Application {
     tableView.refresh();
   }
 
-  // Method to convert a Color object to an RGB string
+  /**
+   * Convert a Color object to an RGB string.
+   *
+   * @param color the Color object to convert
+   * @return the RGB string representation of the color
+   */
   private String toRgbString(Color color) {
     return "rgb(" + (int) (color.getRed() * 255) + "," + (int) (color.getGreen() * 255) + "," + (int) (color.getBlue() * 255) + ")";
   }
