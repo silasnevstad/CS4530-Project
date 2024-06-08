@@ -42,12 +42,7 @@ public class HusksheetsController {
      */
     private void setupEndpoints() {
         // Middleware to check for valid authorization header
-        before((request, response) -> {
-            String authHeader = request.headers("Authorization");
-            if (authHeader == null || !userService.isValidUser(authHeader)) {
-                halt(401, "Unauthorized");
-            }
-        });
+        before(this::beforeFilter);
 
         // API endpoints
         post("/api/v1/register", this::handleRegister);
@@ -217,7 +212,7 @@ public class HusksheetsController {
      */
     public String handleUpdatePublished(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
-        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet, arg.payload)) {
             logger.warn("Invalid input for updating published: publisher={}, sheet={}", arg.publisher, arg.sheet);
             return gson.toJson(new Result(false, "Invalid input", null));
         }
@@ -238,7 +233,7 @@ public class HusksheetsController {
      */
     public String handleUpdateSubscription(Request req, Response res) {
         Argument arg = gson.fromJson(req.body(), Argument.class);
-        if (publisherService.isInvalidInput(arg.publisher, arg.sheet)) {
+        if (publisherService.isInvalidInput(arg.publisher, arg.sheet, arg.payload)) {
             logger.warn("Invalid input for updating subscriptions: publisher={}, sheet={}", arg.publisher, arg.sheet);
             return gson.toJson(new Result(false, "Invalid input", null));
         }
@@ -274,5 +269,18 @@ public class HusksheetsController {
         resultArg.id = lastId;
         resultArg.payload = payload;
         return gson.toJson(new Result(true, "Success", List.of(resultArg)));
+    }
+
+    /**
+     * Middleware to check for valid authorization header.
+     *
+     * @param request The request object.
+     * @param response The response object.
+     */
+    public void beforeFilter(Request request, Response response) {
+        String authHeader = request.headers("Authorization");
+        if (authHeader == null || !userService.isValidUser(authHeader)) {
+            halt(401, "Unauthorized");
+        }
     }
 }

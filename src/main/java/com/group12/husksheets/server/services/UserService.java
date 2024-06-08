@@ -24,6 +24,9 @@ public class UserService {
      * @return true if the user is valid, false otherwise.
      */
     public boolean isValidUser(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Basic ")) {
+            return false;
+        }
         try {
             String decodedAuth = new String(
                     Base64.getDecoder().decode(authHeader.replace("Basic ", ""))

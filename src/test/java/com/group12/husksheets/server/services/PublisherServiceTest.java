@@ -42,10 +42,14 @@ public class PublisherServiceTest {
     }
 
     @Test
-    public void testAddPublisher() {
+    public void testAddPublisherSuccess() {
         assertTrue(publisherService.addPublisher("newPublisher"));
-        // Adding the same publisher again should return false
-        assertFalse(publisherService.addPublisher("newPublisher"));
+    }
+
+    @Test
+    public void testAddPublisherAlreadyExists() {
+        publisherService.addPublisher("existingPublisher");
+        assertFalse(publisherService.addPublisher("existingPublisher"));
     }
 
     @Test
