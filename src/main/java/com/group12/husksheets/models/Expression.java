@@ -1,5 +1,7 @@
 package com.group12.husksheets.models;
 
+import com.group12.husksheets.models.ArithmeticParser;
+
 import java.util.ArrayList;
 import java.util.List;
 
