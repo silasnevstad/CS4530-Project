@@ -1,3 +1,4 @@
+package com.group12.husksheets.models;
 
 import java.util.Stack;
 
@@ -132,5 +133,15 @@ public class ArithmeticParser {
       default:
         throw new Exception("Invalid operator");
     }
+  }
+
+  /**
+   * Checks if a string is an arithmetic expression
+   *
+   * @param expression the string to check
+   * @return true if the string is an arithmetic expression, false otherwise
+   */
+  public static boolean isArithmeticExpression(String expression) {
+    return expression.matches(".*[0-9+\\-*/().].*");
   }
 }
