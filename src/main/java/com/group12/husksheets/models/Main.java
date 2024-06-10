@@ -1,19 +1,26 @@
+package com.group12.husksheets.models;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.DefaultStringConverter;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -38,7 +45,8 @@ public class Main extends Application {
   private Stack<EditAction> redoStack = new Stack<>();
 
   // Clipboard content for cut/copy/paste operations
-  private String clipboardContent = "";
+  private Clipboard clipboard = Clipboard.getSystemClipboard();
+  private ClipboardContent clipboardContent = new ClipboardContent();
 
   // Maps to store various attributes of the cells
   private Map<String, String> formulas = new HashMap<>();
@@ -47,7 +55,12 @@ public class Main extends Application {
   private Map<String, String> textColors = new HashMap<>();
   private Map<String, String> backgroundColors = new HashMap<>();
   private Map<String, String> fonts = new HashMap<>();
+  private Map<String, Boolean> boldStyles = new HashMap<>();
+  private Map<String, Boolean> italicStyles = new HashMap<>();
   private Map<String, String> styles = new HashMap<>();
+
+  // Instance of FormulaParser
+  private FormulaParser formulaParser;
 
   @Override
   public void start(Stage primaryStage) {
@@ -56,6 +69,9 @@ public class Main extends Application {
     // Initialize the TableView
     tableView = new TableView<>();
     tableView.setEditable(true);
+
+    // Initialize the FormulaParser
+    formulaParser = new FormulaParser(tableView);
 
     // Create columns for the TableView
     for (int col = 0; col <= NUM_COLUMNS; col++) {
@@ -128,8 +144,10 @@ public class Main extends Application {
     tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
       if (newSelection != null && !tableView.getSelectionModel().getSelectedCells().isEmpty()) {
         TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
-        String cellKey = getCellKey(newSelection, selectedCell.getColumn() - 1);
-        formulaField.setText(formulas.getOrDefault(cellKey, ""));
+        if (selectedCell.getColumn() > 0) { // Ensure the column index is valid
+          String cellKey = getCellKey(newSelection, selectedCell.getColumn() - 1);
+          formulaField.setText(formulas.getOrDefault(cellKey, newSelection.get(selectedCell.getColumn() - 1).get()));
+        }
       }
     });
 
@@ -147,9 +165,13 @@ public class Main extends Application {
     ToolBar toolBar = new ToolBar();
     Button undoButton = new Button("Undo");
     Button redoButton = new Button("Redo");
-    Button cutButton = new Button("Cut");
-    Button copyButton = new Button("Copy");
-    Button pasteButton = new Button("Paste");
+    Button importCsvButton = new Button("Import CSV");
+    Button boldButton = new Button("Bold");
+    Button italicButton = new Button("Italic");
+
+    // Add action to import CSV button
+    importCsvButton.setOnAction(e -> importCSV());
+
     ComboBox<String> fontComboBox = new ComboBox<>();
     fontComboBox.setItems(FXCollections.observableArrayList(Font.getFontNames()));
     fontComboBox.setOnAction(e -> changeFont(fontComboBox.getValue()));
@@ -164,12 +186,11 @@ public class Main extends Application {
     // Set actions for the toolbar buttons
     undoButton.setOnAction(e -> undo());
     redoButton.setOnAction(e -> redo());
-    cutButton.setOnAction(e -> cut());
-    copyButton.setOnAction(e -> copy());
-    pasteButton.setOnAction(e -> paste());
+    boldButton.setOnAction(e -> toggleBold());
+    italicButton.setOnAction(e -> toggleItalic());
 
     // Add controls to the toolbar
-    toolBar.getItems().addAll(undoButton, redoButton, cutButton, copyButton, pasteButton,
+    toolBar.getItems().addAll(undoButton, redoButton, importCsvButton, boldButton, italicButton,
         new Label("Font:"), fontComboBox, new Label("Size:"), fontSizeField,
         new Label("Text Color:"), textColorPicker, new Label("Background Color:"), backgroundColorPicker);
 
@@ -177,6 +198,23 @@ public class Main extends Application {
 
     root.setTop(topContainer);
     root.setCenter(tableView);
+
+    // Create context menu for right-click operations
+    ContextMenu contextMenu = new ContextMenu();
+    MenuItem cutItem = new MenuItem("Cut");
+    MenuItem copyItem = new MenuItem("Copy");
+    MenuItem pasteItem = new MenuItem("Paste");
+
+    cutItem.setOnAction(e -> cut());
+    copyItem.setOnAction(e -> copy());
+    pasteItem.setOnAction(e -> paste());
+
+    contextMenu.getItems().addAll(cutItem, copyItem, pasteItem);
+
+    // Show context menu on right-click
+    tableView.setOnContextMenuRequested((ContextMenuEvent event) -> {
+      contextMenu.show(tableView, event.getScreenX(), event.getScreenY());
+    });
 
     Scene scene = new Scene(root);
     primaryStage.setScene(scene);
@@ -232,9 +270,10 @@ public class Main extends Application {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
       ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
-      clipboardContent = row.get(selectedCell.getColumn() - 1).get();
-      undoStack.push(new EditAction(row, selectedCell.getColumn() - 1, clipboardContent, "", EditAction.ActionType.VALUE_CHANGE));
-      row.get(selectedCell.getColumn() - 1).set("");
+      clipboardContent.putString(row.get(selectedCell.getColumn()).get());
+      clipboard.setContent(clipboardContent);
+      undoStack.push(new EditAction(row, selectedCell.getColumn(), clipboardContent.getString(), "", EditAction.ActionType.VALUE_CHANGE));
+      row.get(selectedCell.getColumn()).set("");
       redoStack.clear();
     }
   }
@@ -246,7 +285,8 @@ public class Main extends Application {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
       ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
-      clipboardContent = row.get(selectedCell.getColumn() - 1).get();
+      clipboardContent.putString(row.get(selectedCell.getColumn()).get());
+      clipboard.setContent(clipboardContent);
     }
   }
 
@@ -257,13 +297,14 @@ public class Main extends Application {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
       ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
-      String oldValue = row.get(selectedCell.getColumn() - 1).get();
-      undoStack.push(new EditAction(row, selectedCell.getColumn() - 1, oldValue, clipboardContent, EditAction.ActionType.VALUE_CHANGE));
-      row.get(selectedCell.getColumn() - 1).set(clipboardContent);
+      String oldValue = row.get(selectedCell.getColumn()).get();
+      String newValue = clipboard.getString();
+      undoStack.push(new EditAction(row, selectedCell.getColumn(), oldValue, newValue, EditAction.ActionType.VALUE_CHANGE));
+      row.get(selectedCell.getColumn()).set(newValue);
       redoStack.clear();
-      String cellKey = getCellKey(row, selectedCell.getColumn() - 1);
-      formulas.put(cellKey, clipboardContent);
-      evaluateCell(row, selectedCell.getColumn() - 1);
+      String cellKey = getCellKey(row, selectedCell.getColumn());
+      formulas.put(cellKey, newValue);
+      evaluateCell(row, selectedCell.getColumn());
     }
   }
 
@@ -281,8 +322,14 @@ public class Main extends Application {
       return;
     }
     try {
-      double result = ArithmeticParser.evaluate(formula);
-      row.get(column).set(String.valueOf(result));
+      String result;
+      if (formula.startsWith("=")) {
+        result = formulaParser.evaluateFormula(formula);
+      } else {
+        result = ArithmeticParser.isArithmeticExpression(formula) ?
+            String.valueOf(ArithmeticParser.evaluate(formula)) : formula;
+      }
+      row.get(column).set(result);
     } catch (Exception e) {
       row.get(column).set("#REF!");
     }
@@ -309,8 +356,8 @@ public class Main extends Application {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
       ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
-      String cellKey = getCellKey(row, selectedCell.getColumn() - 1);
-      undoStack.push(new EditAction(row, selectedCell.getColumn() - 1, fonts.get(cellKey), font, EditAction.ActionType.FONT_CHANGE));
+      String cellKey = getCellKey(row, selectedCell.getColumn());
+      undoStack.push(new EditAction(row, selectedCell.getColumn(), fonts.get(cellKey), font, EditAction.ActionType.FONT_CHANGE));
       fonts.put(cellKey, font);
       updateCellStyle(cellKey);
       redoStack.clear();
@@ -326,8 +373,8 @@ public class Main extends Application {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
       ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
-      String cellKey = getCellKey(row, selectedCell.getColumn() - 1);
-      undoStack.push(new EditAction(row, selectedCell.getColumn() - 1, fontSizes.get(cellKey), fontSize, EditAction.ActionType.FONT_SIZE_CHANGE));
+      String cellKey = getCellKey(row, selectedCell.getColumn());
+      undoStack.push(new EditAction(row, selectedCell.getColumn(), fontSizes.get(cellKey), fontSize, EditAction.ActionType.FONT_SIZE_CHANGE));
       fontSizes.put(cellKey, fontSize);
       updateCellStyle(cellKey);
       redoStack.clear();
@@ -343,9 +390,9 @@ public class Main extends Application {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
       ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
-      String cellKey = getCellKey(row, selectedCell.getColumn() - 1);
+      String cellKey = getCellKey(row, selectedCell.getColumn());
       String colorString = toRgbString(color);
-      undoStack.push(new EditAction(row, selectedCell.getColumn() - 1, textColors.get(cellKey), colorString, EditAction.ActionType.TEXT_COLOR_CHANGE));
+      undoStack.push(new EditAction(row, selectedCell.getColumn(), textColors.get(cellKey), colorString, EditAction.ActionType.TEXT_COLOR_CHANGE));
       textColors.put(cellKey, colorString);
       updateCellStyle(cellKey);
       redoStack.clear();
@@ -361,9 +408,9 @@ public class Main extends Application {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
       ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
-      String cellKey = getCellKey(row, selectedCell.getColumn() - 1);
+      String cellKey = getCellKey(row, selectedCell.getColumn());
       String colorString = toRgbString(color);
-      undoStack.push(new EditAction(row, selectedCell.getColumn() - 1, backgroundColors.get(cellKey), colorString, EditAction.ActionType.BACKGROUND_COLOR_CHANGE));
+      undoStack.push(new EditAction(row, selectedCell.getColumn(), backgroundColors.get(cellKey), colorString, EditAction.ActionType.BACKGROUND_COLOR_CHANGE));
       backgroundColors.put(cellKey, colorString);
       updateCellStyle(cellKey);
       redoStack.clear();
@@ -389,6 +436,12 @@ public class Main extends Application {
     if (backgroundColors.containsKey(cellKey)) {
       style.append("-fx-background-color: ").append(backgroundColors.get(cellKey)).append(";");
     }
+    if (boldStyles.getOrDefault(cellKey, false)) {
+      style.append("-fx-font-weight: bold;");
+    }
+    if (italicStyles.getOrDefault(cellKey, false)) {
+      style.append("-fx-font-style: italic;");
+    }
     styles.put(cellKey, style.toString());
     tableView.refresh();
   }
@@ -401,6 +454,52 @@ public class Main extends Application {
    */
   private String toRgbString(Color color) {
     return "rgb(" + (int) (color.getRed() * 255) + "," + (int) (color.getGreen() * 255) + "," + (int) (color.getBlue() * 255) + ")";
+  }
+
+  /**
+   * Open a file chooser to select and import a CSV file.
+   */
+  private void importCSV() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+    File file = fileChooser.showOpenDialog(tableView.getScene().getWindow());
+    if (file != null) {
+      CSVImporter.importCSV(file, tableView);
+    }
+  }
+
+  /**
+   * Toggle bold style for the selected cells.
+   */
+  private void toggleBold() {
+    if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
+      for (TablePosition selectedCell : tableView.getSelectionModel().getSelectedCells()) {
+        ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
+        String cellKey = getCellKey(row, selectedCell.getColumn());
+        boolean isBold = boldStyles.getOrDefault(cellKey, false);
+        boldStyles.put(cellKey, !isBold);
+        updateCellStyle(cellKey);
+        String cellValue = row.get(selectedCell.getColumn()).get();
+        row.get(selectedCell.getColumn()).set(cellValue); // Trigger the update
+      }
+    }
+  }
+
+  /**
+   * Toggle italic style for the selected cells.
+   */
+  private void toggleItalic() {
+    if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
+      for (TablePosition selectedCell : tableView.getSelectionModel().getSelectedCells()) {
+        ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
+        String cellKey = getCellKey(row, selectedCell.getColumn());
+        boolean isItalic = italicStyles.getOrDefault(cellKey, false);
+        italicStyles.put(cellKey, !isItalic);
+        updateCellStyle(cellKey);
+        String cellValue = row.get(selectedCell.getColumn()).get();
+        row.get(selectedCell.getColumn()).set(cellValue); // Trigger the update
+      }
+    }
   }
 
   // Class representing an edit action for undo/redo functionality
@@ -483,7 +582,7 @@ public class Main extends Application {
       super.updateItem(item, empty);
 
       if (!empty) {
-        String cellKey = getCellKey(getTableRow().getItem(), getTableView().getColumns().indexOf(getTableColumn()) - 1);
+        String cellKey = getCellKey(getTableRow().getItem(), getTableView().getColumns().indexOf(getTableColumn()));
         setCellAlignment(alignments.getOrDefault(cellKey, Pos.CENTER_LEFT));
         setStyle(styles.getOrDefault(cellKey, ""));
         setText(item);
