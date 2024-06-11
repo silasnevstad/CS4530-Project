@@ -182,6 +182,21 @@ public class PublisherServiceTest {
     }
 
     @Test
+    public void testUpdatePublishedMultipleUpdatesOnePayload() {
+        publisherService.addPublisher("publisher");
+        publisherService.createSheet("publisher", "sheet");
+
+        assertTrue(publisherService.updatePublished("publisher", "sheet", "payload1\npayload2"));
+
+        List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
+        assertEquals(2, updates.size());
+        assertEquals("payload1", updates.get(0).payload);
+        assertEquals("payload2", updates.get(1).payload);
+        assertNotNull(updates.get(0).id);
+        assertNotNull(updates.get(1).id);
+    }
+
+    @Test
     public void testUpdateSubscription() {
         publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheet");
@@ -193,6 +208,21 @@ public class PublisherServiceTest {
         assertEquals(2, updates.size());
         assertEquals("payload1", updates.get(0).payload);
         assertEquals("payload2", updates.get(1).payload);
+        assertNotNull(updates.get(0).id);
+        assertNotNull(updates.get(1).id);
+    }
+
+    @Test
+    public void testUpdateSubscriptionMultipleUpdatesOnePayload() {
+        publisherService.addPublisher("publisher");
+        publisherService.createSheet("publisher", "sheet");
+
+        assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload1 1\npayload2 2"));
+
+        List<Argument> updates = publisherService.getUpdatesForSubscription("publisher", "sheet", "0");
+        assertEquals(2, updates.size());
+        assertEquals("payload1 1", updates.get(0).payload);
+        assertEquals("payload2 2", updates.get(1).payload);
         assertNotNull(updates.get(0).id);
         assertNotNull(updates.get(1).id);
     }

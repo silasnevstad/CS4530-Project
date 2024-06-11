@@ -252,7 +252,13 @@ public class PublisherService {
         if (isInvalidInput(publisher, sheet, payload)) {
             return false;
         }
-        return addUpdate(publisher, sheet, payload, "published");
+        String[] updates = payload.split("\n");
+        for (String update : updates) {
+            if (!addUpdate(publisher, sheet, update, "published")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -267,7 +273,13 @@ public class PublisherService {
         if (isInvalidInput(publisher, sheet, payload)) {
             return false;
         }
-        return addUpdate(publisher, sheet, payload, "subscription");
+        String[] updates = payload.split("\n");
+        for (String update : updates) {
+            if (!addUpdate(publisher, sheet, update, "subscription")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
