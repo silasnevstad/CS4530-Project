@@ -5,7 +5,6 @@ import com.group12.husksheets.models.ArithmeticParser;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.weld.exceptions.IllegalArgumentException;
 
 public class Expression {
 
@@ -35,7 +34,7 @@ public class Expression {
             add("DEBUG");
         }
     };
-    
+
     public static boolean isExpression(String str) {
         return isEOpE(str) || isExpInParens(str) || isFunExp(str) || isIntExp(str) || isStringExp(str) || isRefExp(str);
     }
@@ -124,7 +123,7 @@ public class Expression {
     }
 
     public static boolean isRefExp(String str) {
-        return Ref.isValidRef(str);
+        return isValidRef(str);
     }
 
     public static String eOpEGetFirstExp(String str){
@@ -177,7 +176,46 @@ public class Expression {
         return secondExp;
     }
 
-    public String evaluate(String str) {
+    public static boolean isValidRef(String str) {
+        boolean dollarSignIdentified = false;
+        boolean letterIdentified = false;
+        boolean numberIdentified = false;
+
+        for(int i = 0; i < str.length(); i++) {
+            char currentChar = str.charAt(i);
+
+            if(currentChar == '$') {
+                if(letterIdentified | numberIdentified) {
+                    return false;
+                }
+                else {
+                    dollarSignIdentified = true;
+                }
+            }
+
+            if(Character.isLetter(currentChar)) {
+                if(!dollarSignIdentified || numberIdentified) {
+                    return false;
+                }
+                else {
+                    letterIdentified = true;
+                }
+            }
+
+            if(Character.isDigit(currentChar)) {
+                if(!dollarSignIdentified | !letterIdentified) {
+                    return false;
+                }
+                else {
+                    numberIdentified = true;
+                }
+            }
+        }
+
+        return dollarSignIdentified && letterIdentified && numberIdentified;
+    }
+
+    public static String evaluate(String str) {
         if(!isExpression(str)) {
             throw new IllegalArgumentException("Not a valid expression");
         }
@@ -249,7 +287,7 @@ public class Expression {
         }
     }
 
-    public String evaluateIfFunction(String exp1, String exp2, String exp3) {
+    public static String evaluateIfFunction(String exp1, String exp2, String exp3) {
         if(!evaluate(exp1).matches("[0-9]+")) {
             throw new IllegalArgumentException("The first argument is not a number");
         }
@@ -261,7 +299,7 @@ public class Expression {
         }
     }
 
-    public ArrayList<String> listAllExpressions(String exp) {
+    public static ArrayList<String> listAllExpressions(String exp) {
         ArrayList<String> expressions = new ArrayList<>();
          
         String[] tokens = exp.split(" ");
@@ -278,7 +316,7 @@ public class Expression {
         return expressions;
     }
 
-    public String evaluateSumFunction(String exp) {
+    public static String evaluateSumFunction(String exp) {
         ArrayList<String> expressions = listAllExpressions(exp);
 
         int sum = 0;
@@ -292,7 +330,7 @@ public class Expression {
         return String.valueOf(sum);
     }
 
-    public String evaluateMinFunction(String exp) {
+    public static String evaluateMinFunction(String exp) {
         ArrayList<String> expressions = listAllExpressions(exp);
 
         int min = Integer.parseInt(evaluate(expressions.get(0)));
@@ -308,7 +346,7 @@ public class Expression {
         return String.valueOf(min);
     }
 
-    public String evaluateMaxFunction(String exp) {
+    public static String evaluateMaxFunction(String exp) {
         ArrayList<String> expressions = listAllExpressions(exp);
 
         int max = Integer.parseInt(evaluate(expressions.get(0)));
@@ -324,7 +362,7 @@ public class Expression {
         return String.valueOf(max);
     }
 
-    public String evaluateAvgFunction(String exp) {
+    public static String evaluateAvgFunction(String exp) {
         ArrayList<String> expressions = listAllExpressions(exp);
 
         int sum = 0;
@@ -338,7 +376,7 @@ public class Expression {
         return String.valueOf(sum/expressions.size());
     }
 
-    public String evaluateConcatFunction(String exp) {
+    public static String evaluateConcatFunction(String exp) {
         ArrayList<String> expressions = listAllExpressions(exp);
 
         String accumulator = "";
@@ -352,7 +390,7 @@ public class Expression {
         return accumulator;
     }
 
-    public String evaluateDebugFunction(String exp) {
+    public static String evaluateDebugFunction(String exp) {
         return evaluate(exp);
     }
 }
