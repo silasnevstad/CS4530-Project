@@ -1,5 +1,4 @@
 package com.group12.husksheets.controllers;
-import com.group12.husksheets.models.User;
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Result;
 import com.group12.husksheets.models.Sheet;
@@ -30,7 +29,6 @@ import com.google.gson.Gson;
 public class WelcomePageController {
 
     private final Stage stage;
-    private Model model;
 
     private WelcomePage welcomePage;
 
@@ -43,20 +41,14 @@ public class WelcomePageController {
     @FXML
     private TextField usernameEntered;
 
-    @FXML
-    private TextField passwordEntered;
-    // TO DO: unclear name
-    Map<WelcomePage, User> WelcomePagesToUsers;
-
-    public WelcomePageController(Stage stage, Model model, ArrayList<User> allUsers, ArrayList<Sheet> allSheets) {
+    public WelcomePageController(Stage stage) {
         this.stage = stage;
-        this.model = model;
         this.welcomePage = new WelcomePage(this);
     }
 
     public void run() {
-        loginExistingUserButton.setOnAction(e -> tryExistingUserLogin(usernameEntered.toString(), passwordEntered.toString()));
-        loginNewUserButton.setOnAction(e -> tryNewUserLogin(usernameEntered.toString(), passwordEntered.toString()));
+        loginExistingUserButton.setOnAction(e -> tryExistingUserLogin(usernameEntered.toString()));
+        loginNewUserButton.setOnAction(e -> tryNewUserLogin(usernameEntered.toString()));
 
         try {
             Scene scene = welcomePage.load();
@@ -66,7 +58,7 @@ public class WelcomePageController {
         }
     }
 
-    public void tryNewUserLogin(String username, String password) {
+    public void tryNewUserLogin(String username) {
 
         Argument arg = new Argument();
         arg.publisher = username;
@@ -87,7 +79,6 @@ public class WelcomePageController {
         } catch (IOException e) {
             System.out.println("Could not establish connection");
         }
-        model.tryNewUserLogin(this, username, password);
     }
 
     public void acceptNewUser(String username) {
@@ -96,14 +87,13 @@ public class WelcomePageController {
 
     public void rejectNewUser() {
         usernameEntered.clear();
-        passwordEntered.clear();
         return;
     }
 
-    public void tryExistingUserLogin(String username, String password) {
+    public void tryExistingUserLogin(String username) {
 
         Argument existingPublisherArg = new Argument();
-        existingPublisherArg.publisher = "username";
+        existingPublisherArg.publisher = username;
         Gson gson = new Gson();
         String registerJsonArg = gson.toJson(existingPublisherArg);
 
@@ -129,7 +119,6 @@ public class WelcomePageController {
 
     public void rejectExistingUser() {
         usernameEntered.clear();
-        passwordEntered.clear();
         return;
     }
 
