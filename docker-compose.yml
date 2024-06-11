@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: src/main/java/com/group12/husksheets/server/Dockerfile
+    ports:
+      - "9443:9443"
+    environment:
+      - DATABASE_URL=jdbc:sqlite:/data/husksheets.db
+    volumes:
+      - ./backend/data:/data
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/main/java/com/group12/husksheets/ui/Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "8080:8080"

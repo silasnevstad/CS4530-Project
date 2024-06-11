@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static spark.Spark.*;
 
 import com.group12.husksheets.server.services.DatabaseService;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import com.google.gson.Gson;
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Result;
@@ -29,10 +27,17 @@ public class HusksheetsServerTest {
     private static final Gson gson = new Gson();
 
     @BeforeAll
-    public static void setUp() {
-        HusksheetsServer.startServer("jdbc:sqlite:husksheetsTest.db");
+    public static void setupClass() {
         setupTrustStore();
+    }
+
+    @BeforeEach
+    public void setUp() {
+        stop();
+        awaitStop();
         clearDatabase();
+        HusksheetsServer.startServer("jdbc:sqlite:husksheetsTest.db");
+        waitForServerToStart();
     }
 
     private static void clearDatabase() {
@@ -49,9 +54,10 @@ public class HusksheetsServerTest {
         }
     }
 
-    @AfterAll
-    public static void tearDown() {
+    @AfterEach
+    public void tearDown() {
         stop();
+        awaitStop();
     }
 
     @Test
@@ -303,5 +309,24 @@ public class HusksheetsServerTest {
 
         System.setProperty("javax.net.ssl.trustStore", trustStorePath);
         System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+    }
+
+    private void waitForServerToStart() {
+        int retries = 10;
+        while (retries-- > 0) {
+            try {
+                HttpURLConnection connection = createConnection("/api/v1/getPublishers", "GET", null);
+                connection.getResponseCode();
+                return; // Server is up
+            } catch (IOException e) {
+                try {
+                    Thread.sleep(500); // Wait for 500 milliseconds before retrying
+                } catch (InterruptedException interruptedException) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted while waiting for server to start", interruptedException);
+                }
+            }
+        }
+        throw new RuntimeException("Failed to connect to the server after multiple retries");
     }
 }
