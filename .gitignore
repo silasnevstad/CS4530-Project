@@ -13,3 +13,4 @@ src/main/resources/*.p12
 
 # Database files
 husksheetstest.db
+husksheets.db
