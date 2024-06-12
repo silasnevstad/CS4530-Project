@@ -2,7 +2,7 @@ package com.group12.husksheets.server.controllers;
 
 import com.google.gson.Gson;
 import com.group12.husksheets.models.Argument;
-import com.group12.husksheets.models.Main;
+import com.group12.husksheets.ui.Main;
 import com.group12.husksheets.models.Result;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
