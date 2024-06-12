@@ -7,7 +7,7 @@ build:
 	mvn clean package
 
 client:
-	mvn clean javafx:run -Djavax.net.ssl.trustStore=$JAVA_HOME/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=husksheets-group12
+	mvn clean javafx:run -Djavax.net.ssl.trustStore=src/main/resources/mytruststore.jks -Djavax.net.ssl.trustStorePassword=husksheets
 
 server:
 	mvn exec:java -Dexec.mainClass="com.group12.husksheets.HusksheetsServer"
