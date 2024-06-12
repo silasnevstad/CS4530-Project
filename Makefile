@@ -6,6 +6,9 @@ test:
 build:
 	mvn clean package
 
+client:
+	mvn clean javafx:run
+
 server:
 	mvn exec:java -Dexec.mainClass="com.group12.husksheets.HusksheetsServer"
 
