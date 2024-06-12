@@ -1,6 +1,6 @@
 package com.group12.husksheets.server.controllers;
 
-import com.group12.husksheets.models.WelcomePage;
+import com.group12.husksheets.ui.WelcomePage;
 import com.group12.husksheets.server.services.UserService;
 
 import javafx.fxml.FXML;
