@@ -33,6 +33,7 @@
                                         </HBox>
                                         <VBox prefHeight="51.0" prefWidth="210.0">
                                             <children>
+                                                <TextField fx:id="publisherNameEntered" prefHeight="26.0" prefWidth="139.0" promptText="Publisher Name:" />
                                                 <TextField fx:id="usernameEntered" prefHeight="26.0" prefWidth="139.0" promptText="Username:" />
                                                 <TextField fx:id="passwordEntered" prefHeight="26.0" prefWidth="139.0" promptText="Password:" />
                                             </children>
@@ -42,13 +43,7 @@
                                 <HBox prefHeight="35.0" prefWidth="423.0" />
                                 <HBox prefHeight="100.0" prefWidth="200.0">
                                     <children>
-                                        <HBox prefHeight="78.0" prefWidth="78.0" />
-                                        <HBox prefHeight="78.0" prefWidth="176.0">
-                                            <children>
-                                                <Button fx:id="loginExistingUserButton" minHeight="21.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="80.0" text="Login" textAlignment="CENTER" wrapText="true" />
-                                            </children>
-                                        </HBox>
-                                        <Button fx:id="loginNewUserButton" minHeight="21.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="80.0" text="Create New User" textAlignment="CENTER" wrapText="true" />
+                                        <Button fx:id="loginButton" minHeight="21.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="80.0" text="Login" textAlignment="CENTER" wrapText="true" />
                                     </children>
                                 </HBox>
                             </children>

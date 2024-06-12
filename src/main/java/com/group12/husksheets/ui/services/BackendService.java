@@ -1,6 +1,6 @@
 // Owner: Silas Nevstad
 
-package com.group12.husksheets.ui;
+package com.group12.husksheets.ui.services;
 
 import com.google.gson.Gson;
 import com.group12.husksheets.models.Argument;
@@ -54,6 +54,23 @@ public class BackendService {
     public Result getPublishers() throws Exception {
         String response = getRequest("/getPublishers");
         return gson.fromJson(response, Result.class);
+    }
+
+    /**
+     * Checks if a publisher exists
+     *
+     * @param publisher The name of the publisher to check
+     * @return Whether the publisher exists
+     * @throws Exception If the request fails
+     */
+    public boolean doesPublisherExist(String publisher) throws Exception {
+        Result result = getPublishers();
+        for (Argument arg : result.value) {
+            if (arg.publisher.equals(publisher)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

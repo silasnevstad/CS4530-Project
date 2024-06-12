@@ -1,4 +1,4 @@
-package com.group12.husksheets.ui;
+package com.group12.husksheets.ui.utils;
 
 /**
  * Utility class for column name conversions

@@ -1,4 +1,4 @@
-package com.group12.husksheets.ui;
+package com.group12.husksheets.ui.utils;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;

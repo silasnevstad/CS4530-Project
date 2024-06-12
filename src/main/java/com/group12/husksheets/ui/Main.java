@@ -1,7 +1,11 @@
 package com.group12.husksheets.ui;
 
 import com.group12.husksheets.models.Result;
-import com.group12.husksheets.server.controllers.WelcomePageController;
+import com.group12.husksheets.ui.services.BackendService;
+import com.group12.husksheets.ui.utils.ArithmeticParser;
+import com.group12.husksheets.ui.utils.CSVImporter;
+import com.group12.husksheets.ui.utils.FormulaParser;
+import com.group12.husksheets.ui.controllers.WelcomePageController;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -30,7 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.group12.husksheets.ui.ColumnNameUtils.getColumnIndex;
+import static com.group12.husksheets.ui.utils.ColumnNameUtils.getColumnIndex;
 
 public class Main extends Application {
 
@@ -74,14 +78,14 @@ public class Main extends Application {
 
   private void showWelcomeScreen(Stage primaryStage) {
     try {
-      WelcomePageController controller = new WelcomePageController(primaryStage);
+      WelcomePageController controller = new WelcomePageController(primaryStage, this);
       controller.run();
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
-  public void showSpreadsheetView(Stage primaryStage) {
+  public void showSpreadsheetView(Stage primaryStage, String publisherName, String sheetName, boolean isOwned) {
     BorderPane root = new BorderPane();
 
     backendService = new BackendService("user1", "password1");
@@ -179,7 +183,7 @@ public class Main extends Application {
       contextMenu.show(tableView, event.getScreenX(), event.getScreenY());
     });
 
-    scheduler.scheduleAtFixedRate(this::checkForUpdatesAndSendChanges, 0, 10, TimeUnit.SECONDS);
+    scheduler.scheduleAtFixedRate(() -> checkForUpdatesAndSendChanges(publisherName, sheetName, isOwned), 0, 5, TimeUnit.SECONDS);
 
     Scene scene = new Scene(root);
     primaryStage.setScene(scene);
@@ -266,6 +270,10 @@ public class Main extends Application {
     }
   }
 
+  /**
+   * Apply updates to the sheet based on the payload received.
+   * @param payload The payload containing the updates, separated by newlines
+   */
   private void applyUpdates(String payload) {
     String[] updates = payload.split("\n");
     for (String update : updates) {
@@ -288,7 +296,10 @@ public class Main extends Application {
     }
   }
 
-  private void checkForUpdatesAndSendChanges() {
+  /**
+   * Check for updates from the server and send local changes if any.
+   */
+  private void checkForUpdatesAndSendChanges(String publisherName, String sheetName, boolean isOwned) {
     try {
       fetchAndApplyUpdates(publisherName, sheetName, lastUpdateId, isOwned);
 
@@ -302,6 +313,11 @@ public class Main extends Application {
     }
   }
 
+  /**
+   * Collect local changes made to the sheet.
+   *
+   * @return the payload containing the changes
+   */
   private String collectLocalChanges() {
     StringBuilder changes = new StringBuilder();
     for (Map.Entry<String, String> entry : changeTracker.entrySet()) {
@@ -422,6 +438,11 @@ public class Main extends Application {
     }
   }
 
+  /**
+   * Change the text color of the selected cell.
+   *
+   * @param color the new text color to apply
+   */
   private void changeTextColor(Color color) {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -435,6 +456,11 @@ public class Main extends Application {
     }
   }
 
+  /**
+   * Change the background color of the selected cell.
+   *
+   * @param color the new background color to apply
+   */
   private void changeBackgroundColor(Color color) {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
@@ -448,6 +474,11 @@ public class Main extends Application {
     }
   }
 
+  /**
+   * Update the style of a cell based on its attributes.
+   *
+   * @param cellKey the unique key of the cell
+   */
   private void updateCellStyle(String cellKey) {
     StringBuilder style = new StringBuilder();
     if (fontSizes.containsKey(cellKey)) {
@@ -472,10 +503,19 @@ public class Main extends Application {
     tableView.refresh();
   }
 
+  /**
+   * Convert a Color object to an RGB string.
+   *
+   * @param color the Color object to convert
+   * @return the RGB string representation of the color
+   */
   private String toRgbString(Color color) {
     return "rgb(" + (int) (color.getRed() * 255) + "," + (int) (color.getGreen() * 255) + "," + (int) (color.getBlue() * 255) + ")";
   }
 
+  /**
+   * Open a file chooser to select and import a CSV file.
+   */
   private void importCSV() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
@@ -485,6 +525,9 @@ public class Main extends Application {
     }
   }
 
+  /**
+   * Toggle bold style for the selected cells.
+   */
   private void toggleBold() {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       for (TablePosition selectedCell : tableView.getSelectionModel().getSelectedCells()) {
@@ -499,6 +542,9 @@ public class Main extends Application {
     }
   }
 
+  /**
+   * Toggle italic style for the selected cells.
+   */
   private void toggleItalic() {
     if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
       for (TablePosition selectedCell : tableView.getSelectionModel().getSelectedCells()) {

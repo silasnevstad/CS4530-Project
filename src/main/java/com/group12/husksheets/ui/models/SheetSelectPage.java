@@ -1,6 +1,6 @@
-package com.group12.husksheets.ui;
+package com.group12.husksheets.ui.models;
 
-import com.group12.husksheets.server.controllers.SheetSelectPageController;
+import com.group12.husksheets.ui.controllers.SheetSelectPageController;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

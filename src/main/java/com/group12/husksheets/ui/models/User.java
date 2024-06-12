@@ -1,4 +1,4 @@
-package com.group12.husksheets.ui;
+package com.group12.husksheets.ui.models;
 
 import java.util.ArrayList;
 

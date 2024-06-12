@@ -1,6 +1,6 @@
-package com.group12.husksheets.ui;
+package com.group12.husksheets.ui.models;
 
-import com.group12.husksheets.server.controllers.WelcomePageController;
+import com.group12.husksheets.ui.controllers.WelcomePageController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
