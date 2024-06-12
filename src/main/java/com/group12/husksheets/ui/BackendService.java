@@ -98,10 +98,29 @@ public class BackendService {
     }
 
     /**
+     * Gets the data for a sheet
+     *
+     * @param publisher The publisher to get the sheet data for (owner of the sheet)
+     * @param sheet The name of the sheet to get the data for
+     * @param id The last update id
+     * @param isOwned Whether the sheet is owned by the publisher
+     * @return The result containing the sheet data
+     * @throws Exception If the request fails
+     */
+    public Result getUpdates(String publisher, String sheet, String id, boolean isOwned) throws Exception {
+        if (isOwned) {
+            return getUpdatesForPublished(publisher, sheet, id);
+        } else {
+            return getUpdatesForSubscription(publisher, sheet, id);
+        }
+    }
+
+    /**
      * Gets the updates for a subscription
      *
      * @param publisher The publisher to get the sheet data for (owner of the sheet)
      * @param sheet     The name of the sheet to get the data for
+     * @param id        The last update id
      * @return The result containing the sheet data
      * @throws Exception If the request fails
      */
@@ -116,6 +135,7 @@ public class BackendService {
      *
      * @param publisher The publisher to get the sheet data for (owner of the sheet)
      * @param sheet     The name of the sheet to get the data for
+     * @param id        The last update id
      * @return The result containing the sheet data
      * @throws Exception If the request fails
      */
@@ -123,6 +143,24 @@ public class BackendService {
         Argument arg = new Argument(publisher, sheet, id, null);
         String response = postRequest("/getUpdatesForPublished", arg);
         return gson.fromJson(response, Result.class);
+    }
+
+    /**
+     * Updates a sheet with new data
+     *
+     * @param publisher The publisher to update the sheet data for
+     * @param sheet The name of the sheet to update the data for
+     * @param payload The new data to update the sheet with
+     * @param isOwned Whether the sheet is owned by the publisher
+     * @return The result of the update
+     * @throws Exception If the request fails
+     */
+    public Result updateSheet(String publisher, String sheet, String payload, boolean isOwned) throws Exception {
+        if (isOwned) {
+            return updatePublished(publisher, sheet, payload);
+        } else {
+            return updateSubscription(publisher, sheet, payload);
+        }
     }
 
     /**

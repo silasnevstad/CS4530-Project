@@ -74,6 +74,7 @@ public class Main extends Application {
   private String lastUpdateId = "";
   private final String publisherName = "publisherName";
   private final String sheetName = "sheetName";
+  private final boolean isOwned = true; // Does the client own the sheet?
   private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
   @Override
@@ -237,7 +238,7 @@ public class Main extends Application {
 
     // Call to fetch updates when a sheet is opened
     // Might be unnecessary since scheduler "becomes enabled first after the given initial delay"
-    fetchAndApplyUpdates(publisherName, sheetName, lastUpdateId);
+//    fetchAndApplyUpdates(publisherName, sheetName, lastUpdateId, isOwned);
 
     // Schedule periodic tasks
     scheduler.scheduleAtFixedRate(this::checkForUpdatesAndSendChanges, 0, 10, TimeUnit.SECONDS);
@@ -259,9 +260,9 @@ public class Main extends Application {
    * @param sheet The name of the sheet
    * @param id The last id received ("0" for initial fetch)
    */
-  private void fetchAndApplyUpdates(String publisher, String sheet, String id) {
+  private void fetchAndApplyUpdates(String publisher, String sheet, String id, boolean isOwned) {
     try {
-      Result result = backendService.getUpdatesForSubscription(publisher, sheet, id);
+      Result result = backendService.getUpdates(publisher, sheet, id, isOwned);
       if (result.success && result.value != null && !result.value.isEmpty()) {
         String payload = result.value.get(0).payload;
         lastUpdateId = result.value.get(0).id;
@@ -300,12 +301,12 @@ public class Main extends Application {
   private void checkForUpdatesAndSendChanges() {
     try {
       // Fetch updates from the server
-      fetchAndApplyUpdates(publisherName, sheetName, lastUpdateId);
+      fetchAndApplyUpdates(publisherName, sheetName, lastUpdateId, isOwned);
 
       // Collect local changes and send to the server
       String payload = collectLocalChanges();
       if (!payload.isEmpty()) {
-        backendService.updatePublished(publisherName, sheetName, payload);
+        backendService.updateSheet(publisherName, sheetName, payload, isOwned);
         changeTracker.clear(); // Clear the change tracker after sending changes
       }
     } catch (Exception e) {
