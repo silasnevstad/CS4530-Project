@@ -29,6 +29,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.group12.husksheets.ui.ColumnNameUtils.getColumnIndex;
+
 public class Main extends Application {
 
   // Constants for initial number of rows and columns
@@ -71,9 +73,9 @@ public class Main extends Application {
 
   // Instance of BackendService
   private BackendService backendService;
-  private String lastUpdateId = "";
-  private final String publisherName = "publisherName";
-  private final String sheetName = "sheetName";
+  private String lastUpdateId = "0";
+  private final String publisherName = "publisherName1";
+  private final String sheetName = "sheetName1";
   private final boolean isOwned = true; // Does the client own the sheet?
   private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -282,10 +284,17 @@ public class Main extends Application {
     for (String update : updates) {
       String[] parts = update.split(" ", 2);
       if (parts.length == 2) {
-        String cell = parts[0];
+        String cell = parts[0].substring(1);  // Remove the dollar sign
         String value = parts[1];
-        int row = Integer.parseInt(cell.substring(1)) - 1;
-        int col = cell.charAt(0) - 'A';
+
+        // Separate the column part and row part of the cell reference
+        String columnPart = cell.replaceAll("\\d", "");
+        String rowPart = cell.replaceAll("\\D", "");
+
+        int col = getColumnIndex(columnPart);
+        int row = Integer.parseInt(rowPart) - 1;  // Convert to 0-based index
+
+        System.out.println("Applying update to cell " + cell + " with value " + value);
 
         if (row < NUM_ROWS && col < NUM_COLUMNS) {
           ObservableList<SimpleStringProperty> rowData = tableView.getItems().get(row);
@@ -323,7 +332,8 @@ public class Main extends Application {
     StringBuilder changes = new StringBuilder();
 
     for (Map.Entry<String, String> entry : changeTracker.entrySet()) {
-      changes.append(entry.getKey()).append(" ").append(entry.getValue()).append("\n");
+      String cell = getColumnHeader(Integer.parseInt(entry.getKey().split(",")[1])) + (Integer.parseInt(entry.getKey().split(",")[0]) + 1);
+      changes.append("$").append(cell).append(" ").append(entry.getValue()).append("\n");
     }
 
     return changes.toString().trim();
