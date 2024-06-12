@@ -1,4 +1,4 @@
-package com.group12.husksheets.models;
+package com.group12.husksheets.ui;
 
 import com.group12.husksheets.server.controllers.WelcomePageController;
 import javafx.fxml.FXMLLoader;
