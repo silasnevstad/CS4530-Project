@@ -1,4 +1,4 @@
-.PHONY: test build server docker
+.PHONY: test build server client docker
 
 test:
 	mvn test
