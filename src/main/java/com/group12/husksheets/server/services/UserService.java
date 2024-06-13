@@ -15,6 +15,7 @@ public class UserService {
     public UserService() {
         users.put("user1", "password1");
         users.put("user2", "password2");
+        users.put("team12", "yaBYnQMwfq<l5SmV");
     }
 
     /**
