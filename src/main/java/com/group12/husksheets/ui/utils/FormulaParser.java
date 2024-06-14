@@ -25,6 +25,7 @@ public class FormulaParser {
      * @param formula The formula to evaluate
      * @return The result of the formula
      */
+    //Zach and Jason
     public String evaluateFormula(String formula) {
         try {
             if (formula.startsWith("=")) {
@@ -129,6 +130,7 @@ public class FormulaParser {
      * @param cellRef The cell reference (e.g., A1)
      * @return An array with row and column indices
      */
+    //Zach and Jason
     public static int[] parseCellReference(String cellRef) {
         int colIndex = ColumnNameUtils.getColumnIndex(cellRef.replaceAll("[^A-Z]", ""));
         int rowIndex = Integer.parseInt(cellRef.replaceAll("[^0-9]", "")) - 1;
@@ -143,6 +145,7 @@ public class FormulaParser {
      * @param destCell The destination cell reference (e.g., B2)
      * @return The content of the source cell if the copy is successful, "#REF!" otherwise
      */
+    //Zach and Jason
     private String copyCellContent(String sourceCell, String destCell) {
         try {
             int[] sourceIndices = parseCellReference(sourceCell);
@@ -166,6 +169,7 @@ public class FormulaParser {
      * @param str The string to check
      * @return True if the string is numeric, false otherwise
      */
+    //Zach and Jason
     public static boolean isNumeric(String str) {
         try {
             Double.parseDouble(str);

@@ -16,6 +16,7 @@ public class SpreadsheetUtils {
      * @param range The range of cells (e.g., A1:B2)
      * @return The sum of the values
      */
+    //Zach and Jason
     public static double sumRange(TableView<ObservableList<SimpleStringProperty>> tableView, String range) {
         String[] cells = range.split(":");
         String startCell = cells[0];
@@ -41,6 +42,7 @@ public class SpreadsheetUtils {
      * @param cellRef The cell reference (e.g., A1)
      * @return The sum of the value
      */
+    //Zach and Jason
     public static double sum(TableView<ObservableList<SimpleStringProperty>> tableView, String cellRef) {
         int[] cell = parseCellReference(cellRef);
         String cellValue = tableView.getItems().get(cell[0]).get(cell[1]).get();
@@ -54,6 +56,7 @@ public class SpreadsheetUtils {
      * @param range The range of cells (e.g., A1:B2)
      * @return The minimum value
      */
+    //Zach and Jason
     public static double minRange(TableView<ObservableList<SimpleStringProperty>> tableView, String range) {
         String[] cells = range.split(":");
         String startCell = cells[0];
@@ -82,6 +85,7 @@ public class SpreadsheetUtils {
      * @param cellRef The cell reference (e.g., A1)
      * @return The minimum value
      */
+    //Zach and Jason
     public static double min(TableView<ObservableList<SimpleStringProperty>> tableView, String cellRef) {
         int[] cell = parseCellReference(cellRef);
         String cellValue = tableView.getItems().get(cell[0]).get(cell[1]).get();
@@ -95,6 +99,7 @@ public class SpreadsheetUtils {
      * @param range The range of cells (e.g., A1:B2)
      * @return The maximum value
      */
+    //Zach and Jason
     public static double maxRange(TableView<ObservableList<SimpleStringProperty>> tableView, String range) {
         String[] cells = range.split(":");
         String startCell = cells[0];
@@ -123,6 +128,7 @@ public class SpreadsheetUtils {
      * @param cellRef The cell reference (e.g., A1)
      * @return The maximum value
      */
+    //Zach and Jason
     public static double max(TableView<ObservableList<SimpleStringProperty>> tableView, String cellRef) {
         int[] cell = parseCellReference(cellRef);
         String cellValue = tableView.getItems().get(cell[0]).get(cell[1]).get();
@@ -136,6 +142,7 @@ public class SpreadsheetUtils {
      * @param range The range of cells (e.g., A1:B2)
      * @return The concatenated result
      */
+    //Zach and Jason
     public static String concatRange(TableView<ObservableList<SimpleStringProperty>> tableView, String range) {
         String[] cells = range.split(":");
         String startCell = cells[0];
@@ -158,6 +165,7 @@ public class SpreadsheetUtils {
      * @param cellRef The cell reference (e.g., A1)
      * @return The concatenated result
      */
+    //Zach and Jason
     public static String concat(TableView<ObservableList<SimpleStringProperty>> tableView, String cellRef) {
         int[] cell = parseCellReference(cellRef);
         return tableView.getItems().get(cell[0]).get(cell[1]).get();
@@ -170,6 +178,7 @@ public class SpreadsheetUtils {
      * @param range The range of cells (e.g., A1:B2)
      * @return An array with the sum of the cell values and the count of cells
      */
+    //Zach and Jason
     public static double[] avgRange(TableView<ObservableList<SimpleStringProperty>> tableView, String range) {
         String[] cells = range.split(":");
         int[] start = parseCellReference(cells[0]);
@@ -198,6 +207,7 @@ public class SpreadsheetUtils {
      * @param falseValue The value if the condition is false
      * @return The evaluated result
      */
+    //Zach and Jason
     public static String ifFunction(TableView<ObservableList<SimpleStringProperty>> tableView, String condition, String trueValue, String falseValue) {
         boolean result = evaluateCondition(tableView, condition);
         return result ? evaluateExpression(tableView, trueValue) : evaluateExpression(tableView, falseValue);
@@ -210,6 +220,7 @@ public class SpreadsheetUtils {
      * @param expression The expression to evaluate
      * @return The evaluated result
      */
+    //Zach and Jason
     public static String debugFunction(TableView<ObservableList<SimpleStringProperty>> tableView, String expression) {
         // For the purpose of debugging, simply evaluate the expression
         return evaluateExpression(tableView, expression);
@@ -222,6 +233,7 @@ public class SpreadsheetUtils {
      * @param condition The condition to evaluate
      * @return True if the condition is met, false otherwise
      */
+    //Zach and Jason
     private static boolean evaluateCondition(TableView<ObservableList<SimpleStringProperty>> tableView, String condition) {
         // Implement basic comparison operators for the condition
         String[] parts;
@@ -254,6 +266,7 @@ public class SpreadsheetUtils {
      * @param expression The expression to evaluate
      * @return The evaluated result
      */
+    //Zach and Jason
     private static String evaluateExpression(TableView<ObservableList<SimpleStringProperty>> tableView, String expression) {
         // Implement evaluation logic for expressions
         expression = expression.trim();
@@ -273,6 +286,7 @@ public class SpreadsheetUtils {
      * @param cellRef The cell reference (e.g., A1)
      * @return An array with row and column indices
      */
+    //Zach and Jason
     private static int[] parseCellReference(String cellRef) {
         int colIndex = ColumnNameUtils.getColumnIndex(cellRef.replaceAll("[^A-Z]", ""));
         int rowIndex = Integer.parseInt(cellRef.replaceAll("[^0-9]", "")) - 1;
@@ -285,6 +299,7 @@ public class SpreadsheetUtils {
      * @param str The string to check
      * @return True if the string is numeric, false otherwise
      */
+    //Zach and Jason
     private static boolean isNumeric(String str) {
         try {
             Double.parseDouble(str);
