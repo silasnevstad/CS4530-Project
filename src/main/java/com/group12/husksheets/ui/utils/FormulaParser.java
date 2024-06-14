@@ -104,6 +104,16 @@ public class FormulaParser {
                     String expression = formula.substring(7, formula.length() - 1);
                     return SpreadsheetUtils.debugFunction(tableView, expression.trim());
                 }
+                
+                // Owner: Zach Pulichino
+                if (formula.startsWith("=COPY(") && formula.endsWith(")")) {
+                    String[] parts = formula.substring(6, formula.length() - 1).split(",");
+                    if (parts.length == 2) {
+                        return copyCellContent(parts[0].trim(), parts[1].trim());
+                    } else {
+                        return "#REF!";
+                    }
+                }
                 // Evaluate arithmetic expressions using ArithmeticParser
                 return String.valueOf(ArithmeticParser.evaluate(formula.substring(1)));
             }
@@ -123,6 +133,31 @@ public class FormulaParser {
         int colIndex = ColumnNameUtils.getColumnIndex(cellRef.replaceAll("[^A-Z]", ""));
         int rowIndex = Integer.parseInt(cellRef.replaceAll("[^0-9]", "")) - 1;
         return new int[]{rowIndex, colIndex};
+    }
+
+    // Owner: Zach Pulichino
+    /**
+     * Copies the content from the source cell to the destination cell
+     *
+     * @param sourceCell The source cell reference (e.g., A1)
+     * @param destCell The destination cell reference (e.g., B2)
+     * @return The content of the source cell if the copy is successful, "#REF!" otherwise
+     */
+    private String copyCellContent(String sourceCell, String destCell) {
+        try {
+            int[] sourceIndices = parseCellReference(sourceCell);
+            int[] destIndices = parseCellReference(destCell);
+
+            ObservableList<SimpleStringProperty> sourceRow = tableView.getItems().get(sourceIndices[0]);
+            ObservableList<SimpleStringProperty> destRow = tableView.getItems().get(destIndices[0]);
+
+            String sourceContent = sourceRow.get(sourceIndices[1]).get();
+            destRow.get(destIndices[1]).set(sourceContent);
+
+            return sourceContent;
+        } catch (Exception e) {
+            return "#REF!";
+        }
     }
 
     /**
