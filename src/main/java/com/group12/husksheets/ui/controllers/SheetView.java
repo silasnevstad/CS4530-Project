@@ -1,6 +1,10 @@
+// Owner: Zach Pulichino
 package com.group12.husksheets.ui.controllers;
-
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import java.io.IOException;
 import com.group12.husksheets.models.Result;
+import com.group12.husksheets.ui.controllers.SheetSelectPageController;
 import com.group12.husksheets.ui.services.BackendService;
 import com.group12.husksheets.ui.utils.ArithmeticParser;
 import com.group12.husksheets.ui.utils.CSVImporter;
@@ -38,42 +42,42 @@ import static com.group12.husksheets.ui.utils.ColumnNameUtils.getColumnIndex;
 public class SheetView extends Application {
 
     // Constants for initial number of rows and columns
-    private static final int NUM_ROWS = 100;
-    private static final int NUM_COLUMNS = 26;
+    public static final int NUM_ROWS = 100;
+    public static final int NUM_COLUMNS = 26;
 
     // TableView to hold the spreadsheet data
-    private TableView<ObservableList<SimpleStringProperty>> tableView;
+    public TableView<ObservableList<SimpleStringProperty>> tableView;
 
     // TextField to display and edit cell formulas
-    private TextField formulaField;
+    public TextField formulaField;
 
     // TextField for the title of the spreadsheet
-    private TextField titleField;
+    public TextField titleField;
 
     // Stacks to manage undo and redo operations
-    private Stack<EditAction> undoStack = new Stack<>();
-    private Stack<EditAction> redoStack = new Stack<>();
+    public Stack<EditAction> undoStack = new Stack<>();
+    public Stack<EditAction> redoStack = new Stack<>();
 
     // Clipboard content for cut/copy/paste operations
-    private Clipboard clipboard = Clipboard.getSystemClipboard();
-    private ClipboardContent clipboardContent = new ClipboardContent();
+    public Clipboard clipboard = Clipboard.getSystemClipboard();
+    public ClipboardContent clipboardContent = new ClipboardContent();
 
     // Maps to store various attributes of the cells
-    private Map<String, String> formulas = new HashMap<>();
-    private Map<String, Pos> alignments = new HashMap<>();
-    private Map<String, String> fontSizes = new HashMap<>();
-    private Map<String, String> textColors = new HashMap<>();
-    private Map<String, String> backgroundColors = new HashMap<>();
-    private Map<String, String> fonts = new HashMap<>();
-    private Map<String, Boolean> boldStyles = new HashMap<>();
-    private Map<String, Boolean> italicStyles = new HashMap<>();
-    private Map<String, String> styles = new HashMap<>();
+    public Map<String, String> formulas = new HashMap<>();
+    public Map<String, Pos> alignments = new HashMap<>();
+    public Map<String, String> fontSizes = new HashMap<>();
+    public Map<String, String> textColors = new HashMap<>();
+    public Map<String, String> backgroundColors = new HashMap<>();
+    public Map<String, String> fonts = new HashMap<>();
+    public Map<String, Boolean> boldStyles = new HashMap<>();
+    public Map<String, Boolean> italicStyles = new HashMap<>();
+    public Map<String, String> styles = new HashMap<>();
 
     // Change tracker to keep track of changes
     private Map<String, String> changeTracker = new HashMap<>();
 
     // Instance of FormulaParser
-    private FormulaParser formulaParser;
+    public FormulaParser formulaParser;
 
     // Instance of BackendService
     private BackendService backendService;
@@ -196,6 +200,9 @@ public class SheetView extends Application {
         Button boldButton = new Button("Bold");
         Button italicButton = new Button("Italic");
 
+        // Add "Back to Home" button
+        Button backToHomeButton = new Button("Back to Home");
+
         // Add action to import CSV button
         importCsvButton.setOnAction(e -> importCSV());
 
@@ -216,10 +223,16 @@ public class SheetView extends Application {
         boldButton.setOnAction(e -> toggleBold());
         italicButton.setOnAction(e -> toggleItalic());
 
+        // Set action for "Back to Home" button
+        backToHomeButton.setOnAction(e -> {
+            checkForUpdatesAndSendChanges(publisherName, sheetName, isOwned);
+            navigateToSheetSelect(stage, publisherName);
+        });
+
         // Add controls to the toolbar
         toolBar.getItems().addAll(undoButton, redoButton, importCsvButton, boldButton, italicButton,
-                new Label("Font:"), fontComboBox, new Label("Size:"), fontSizeField,
-                new Label("Text Color:"), textColorPicker, new Label("Background Color:"), backgroundColorPicker);
+            new Label("Font:"), fontComboBox, new Label("Size:"), fontSizeField,
+            new Label("Text Color:"), textColorPicker, new Label("Background Color:"), backgroundColorPicker, backToHomeButton);
 
         topContainer.getChildren().addAll(titleBox, toolBar, formulaField);
 
@@ -350,7 +363,7 @@ public class SheetView extends Application {
      * @param index the column index
      * @return the column header label
      */
-    private String getColumnHeader(int index) {
+    public String getColumnHeader(int index) {
         StringBuilder sb = new StringBuilder();
         while (index >= 0) {
             sb.insert(0, (char) ('A' + (index % 26)));
@@ -362,7 +375,7 @@ public class SheetView extends Application {
     /**
      * Undo the last action.
      */
-    private void undo() {
+    public void undo() {
         if (!undoStack.isEmpty()) {
             EditAction action = undoStack.pop();
             action.undo();
@@ -373,7 +386,7 @@ public class SheetView extends Application {
     /**
      * Redo the last undone action.
      */
-    private void redo() {
+    public void redo() {
         if (!redoStack.isEmpty()) {
             EditAction action = redoStack.pop();
             action.redo();
@@ -384,7 +397,7 @@ public class SheetView extends Application {
     /**
      * Cut the selected cell's content.
      */
-    private void cut() {
+    public void cut() {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
             ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -399,7 +412,7 @@ public class SheetView extends Application {
     /**
      * Copy the selected cell's content.
      */
-    private void copy() {
+    public void copy() {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
             ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -411,7 +424,7 @@ public class SheetView extends Application {
     /**
      * Paste the clipboard content into the selected cell.
      */
-    private void paste() {
+    public void paste() {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
             ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -432,7 +445,7 @@ public class SheetView extends Application {
      * @param row the row containing the cell
      * @param column the column index of the cell
      */
-    private void evaluateCell(ObservableList<SimpleStringProperty> row, int column) {
+    public void evaluateCell(ObservableList<SimpleStringProperty> row, int column) {
         String cellKey = getCellKey(row, column);
         String formula = formulas.getOrDefault(cellKey, "");
         if (formula.isEmpty()) {
@@ -445,7 +458,7 @@ public class SheetView extends Application {
                 result = formulaParser.evaluateFormula(formula);
             } else {
                 result = ArithmeticParser.isArithmeticExpression(formula) ?
-                        String.valueOf(ArithmeticParser.evaluate(formula)) : formula;
+                    String.valueOf(ArithmeticParser.evaluate(formula)) : formula;
             }
             row.get(column).set(result);
         } catch (Exception e) {
@@ -460,7 +473,7 @@ public class SheetView extends Application {
      * @param column the column index of the cell
      * @return the unique key for the cell
      */
-    private String getCellKey(ObservableList<SimpleStringProperty> row, int column) {
+    public String getCellKey(ObservableList<SimpleStringProperty> row, int column) {
         int rowIndex = tableView.getItems().indexOf(row);
         return rowIndex + "," + column;
     }
@@ -470,7 +483,7 @@ public class SheetView extends Application {
      *
      * @param font the new font to apply
      */
-    private void changeFont(String font) {
+    public void changeFont(String font) {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
             ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -487,7 +500,7 @@ public class SheetView extends Application {
      *
      * @param fontSize the new font size to apply
      */
-    private void changeFontSize(String fontSize) {
+    public void changeFontSize(String fontSize) {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
             ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -504,7 +517,7 @@ public class SheetView extends Application {
      *
      * @param color the new text color to apply
      */
-    private void changeTextColor(Color color) {
+    public void changeTextColor(Color color) {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
             ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -522,7 +535,7 @@ public class SheetView extends Application {
      *
      * @param color the new background color to apply
      */
-    private void changeBackgroundColor(Color color) {
+    public void changeBackgroundColor(Color color) {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
             ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -540,7 +553,7 @@ public class SheetView extends Application {
      *
      * @param cellKey the unique key of the cell
      */
-    private void updateCellStyle(String cellKey) {
+    public void updateCellStyle(String cellKey) {
         StringBuilder style = new StringBuilder();
         if (fontSizes.containsKey(cellKey)) {
             style.append("-fx-font-size: ").append(fontSizes.get(cellKey)).append(";");
@@ -570,14 +583,14 @@ public class SheetView extends Application {
      * @param color the Color object to convert
      * @return the RGB string representation of the color
      */
-    private String toRgbString(Color color) {
+    public String toRgbString(Color color) {
         return "rgb(" + (int) (color.getRed() * 255) + "," + (int) (color.getGreen() * 255) + "," + (int) (color.getBlue() * 255) + ")";
     }
 
     /**
      * Open a file chooser to select and import a CSV file.
      */
-    private void importCSV() {
+    public void importCSV() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
         File file = fileChooser.showOpenDialog(tableView.getScene().getWindow());
@@ -589,7 +602,7 @@ public class SheetView extends Application {
     /**
      * Toggle bold style for the selected cells.
      */
-    private void toggleBold() {
+    public void toggleBold() {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             for (TablePosition selectedCell : tableView.getSelectionModel().getSelectedCells()) {
                 ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -606,7 +619,7 @@ public class SheetView extends Application {
     /**
      * Toggle italic style for the selected cells.
      */
-    private void toggleItalic() {
+    public void toggleItalic() {
         if (!tableView.getSelectionModel().getSelectedCells().isEmpty()) {
             for (TablePosition selectedCell : tableView.getSelectionModel().getSelectedCells()) {
                 ObservableList<SimpleStringProperty> row = tableView.getItems().get(selectedCell.getRow());
@@ -621,7 +634,7 @@ public class SheetView extends Application {
     }
 
     // Class representing an edit action for undo/redo functionality
-    private class EditAction {
+    public class EditAction {
         // Enum to specify the type of action
         enum ActionType {
             VALUE_CHANGE, ALIGNMENT_CHANGE, FONT_SIZE_CHANGE, TEXT_COLOR_CHANGE, BACKGROUND_COLOR_CHANGE, FONT_CHANGE
@@ -652,7 +665,7 @@ public class SheetView extends Application {
         }
 
         // Method to apply the action
-        private void apply(String value) {
+        public void apply(String value) {
             String cellKey = getCellKey(row, column);
             switch (actionType) {
                 case VALUE_CHANGE:
@@ -687,7 +700,7 @@ public class SheetView extends Application {
     }
 
     // Custom TableCell class to support cell alignment
-    private class AlignedTextFieldTableCell extends TextFieldTableCell<ObservableList<SimpleStringProperty>, String> {
+    public class AlignedTextFieldTableCell extends TextFieldTableCell<ObservableList<SimpleStringProperty>, String> {
         private Pos cellAlignment = Pos.CENTER_LEFT;
 
         public AlignedTextFieldTableCell() {
@@ -723,5 +736,14 @@ public class SheetView extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    // Method to navigate back to the sheet select page
+    private void navigateToSheetSelect(Stage stage, String publisherName) {
+        SheetSelectPageController controller = new SheetSelectPageController();
+        controller.setStage(stage);
+        controller.setPublisherName(publisherName);
+        controller.setBackendService(backendService);
+        controller.run();
     }
 }
