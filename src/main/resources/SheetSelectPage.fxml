@@ -48,11 +48,12 @@
                                                                         </HBox>
                                                                         <HBox prefHeight="50.0" prefWidth="223.0">
                                                                             <children>
-                                                                                <HBox alignment="CENTER" prefHeight="50.0" prefWidth="227.0">
+                                                                                <VBox alignment="CENTER" prefHeight="50.0" prefWidth="227.0">
                                                                                     <children>
                                                                                         <Button fx:id="createNewSheetButton" mnemonicParsing="false" prefHeight="43.0" prefWidth="163.0" text="Create New Sheet" />
+                                                                                        <Button fx:id="deleteSheetButton" mnemonicParsing="false" prefHeight="43.0" prefWidth="163.0" text="Delete Sheet" />
                                                                                     </children>
-                                                                                </HBox>
+                                                                                </VBox>
                                                                             </children>
                                                                         </HBox>
                                                                     </children>
