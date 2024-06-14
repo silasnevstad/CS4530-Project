@@ -133,7 +133,7 @@ public class SheetView extends Application {
 
         VBox topContainer = new VBox();
 
-        titleField = new TextField("Untitled Spreadsheet");
+        titleField = new TextField(sheetName);
         titleField.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
         titleField.setEditable(true);
         titleField.setPrefWidth(400);
