@@ -1,5 +1,5 @@
 // Owner: Zach Pulichino
-package com.group12.husksheets.server.ui;
+package com.group12.husksheets.ui;
 
 import com.group12.husksheets.ui.controllers.SheetView;
 
