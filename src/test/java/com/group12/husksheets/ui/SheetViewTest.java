@@ -3,11 +3,9 @@ package com.group12.husksheets.ui;
 
 import com.group12.husksheets.ui.controllers.SheetView;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.BeforeAll;
