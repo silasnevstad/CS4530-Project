@@ -10,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import javafx.scene.control.TableView;
 
 import static org.junit.jupiter.api.Assertions.*;
 
