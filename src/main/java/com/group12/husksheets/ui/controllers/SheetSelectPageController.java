@@ -100,6 +100,7 @@ public class SheetSelectPageController {
     }
   }
 
+  // Owner: Zach Pulichino
   public void newSheet() {
     TextInputDialog dialog = new TextInputDialog("NewSheet");
     dialog.setTitle("Create New Sheet");
@@ -121,6 +122,7 @@ public class SheetSelectPageController {
     });
   }
 
+  // Owner: Zach Pulichino
   private void deleteSelectedSheet() {
     String selectedSheet = sheetsListView.getSelectionModel().getSelectedItem();
     if (selectedSheet != null) {
@@ -143,10 +145,12 @@ public class SheetSelectPageController {
     }
   }
 
+  // Owner: Zach Pulichino
   private void openSheet(String publisher, String sheet, boolean isOwned) {
     mainApp.showSpreadsheetView(stage, publisher, sheet, isOwned);
   }
 
+  // Owner: Zach Pulichino
   private void showError(String title, String message) {
     Alert alert = new Alert(Alert.AlertType.ERROR);
     alert.setTitle(title);
