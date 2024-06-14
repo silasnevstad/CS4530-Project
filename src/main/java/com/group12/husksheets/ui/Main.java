@@ -1,4 +1,4 @@
-// Owner: Zach Pulichino
+// Owner: Zach Pulichino and Silas Nevstad
 package com.group12.husksheets.ui;
 
 

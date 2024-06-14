@@ -1,3 +1,4 @@
+// Owner: Silas Nevstad, Nicholas Gillespie, Zach Pulichino
 package com.group12.husksheets.ui.controllers;
 
 import com.group12.husksheets.ui.models.WelcomePage;
