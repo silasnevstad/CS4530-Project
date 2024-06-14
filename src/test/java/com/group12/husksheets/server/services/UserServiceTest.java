@@ -25,65 +25,65 @@ public class UserServiceTest {
     @Test
     public void testIsValidUserWithValidCredentials() {
         String authHeader = encodeCredentials("user1", "password1");
-        assertTrue(userService.isValidUser(authHeader));
+        assertTrue(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithInvalidCredentials() {
+    public void testIsValidAuthWithInvalidCredentials() {
         String authHeader = encodeCredentials("user1", "wrongpassword");
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithNonExistentUser() {
+    public void testIsValidUserWithNonExistentAuth() {
         String authHeader = encodeCredentials("nonexistent", "password");
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithMalformedHeader() {
+    public void testIsValidAuthWithMalformedHeader() {
         String authHeader = "Basic malformed";
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithEmptyHeader() {
+    public void testIsValidAuthWithEmptyHeader() {
         String authHeader = "";
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithNullHeader() {
-        assertFalse(userService.isValidUser(null));
+    public void testIsValidAuthWithNullHeader() {
+        assertFalse(userService.isValidAuth(null));
     }
 
     @Test
-    public void testIsValidUserWithInvalidBase64() {
+    public void testIsValidAuthWithInvalidBase64() {
         String authHeader = "Basic !@#$%^&*()";
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithMissingPrefix() {
+    public void testIsValidAuthWithMissingPrefix() {
         String authHeader = Base64.getEncoder().encodeToString("user1:password1".getBytes());
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithEmptyUsername() {
+    public void testIsValidAuthWithEmptyUsername() {
         String authHeader = encodeCredentials("", "password1");
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithEmptyPassword() {
+    public void testIsValidAuthWithEmptyPassword() {
         String authHeader = encodeCredentials("user1", "");
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 
     @Test
-    public void testIsValidUserWithNoColon() {
+    public void testIsValidAuthWithNoColon() {
         String authHeader = "Basic " + Base64.getEncoder().encodeToString("user1password1".getBytes());
-        assertFalse(userService.isValidUser(authHeader));
+        assertFalse(userService.isValidAuth(authHeader));
     }
 }

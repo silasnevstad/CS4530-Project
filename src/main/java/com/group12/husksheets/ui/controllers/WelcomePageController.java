@@ -1,9 +1,7 @@
 package com.group12.husksheets.ui.controllers;
 
-import com.group12.husksheets.ui.Main;
 import com.group12.husksheets.ui.models.WelcomePage;
 import com.group12.husksheets.server.services.UserService;
-
 import com.group12.husksheets.ui.services.BackendService;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -19,7 +17,6 @@ public class WelcomePageController {
   private final WelcomePage welcomePage;
   private final UserService userService;
   private BackendService backendService;
-  private Main mainApp;
 
   @FXML
   private Button loginButton;
@@ -33,11 +30,10 @@ public class WelcomePageController {
   @FXML
   private TextField passwordEntered;
 
-  public WelcomePageController(Stage stage, Main mainApp) {
+  public WelcomePageController(Stage stage) {
     this.stage = stage;
     this.userService = new UserService();
     this.welcomePage = new WelcomePage(this);
-    this.mainApp = mainApp;
   }
 
   public void run() {
@@ -64,7 +60,7 @@ public class WelcomePageController {
   // Owner: Zach Pulichino
   public void tryUserLogin(String publisherName, String username, String password) throws Exception {
     String authHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-    if (userService.isValidUser(authHeader)) {
+    if (userService.isValidAuth(authHeader)) {
       this.backendService = new BackendService(username, password);
       if (backendService.doesPublisherExist(publisherName)) {
         acceptUser(publisherName);
@@ -93,7 +89,6 @@ public class WelcomePageController {
       controller.setPublisherName(publisherName);
       controller.setStage(stage);
       controller.setBackendService(backendService);
-      controller.setMainApp(mainApp);
       controller.run();
     } catch (Exception e) {
       e.printStackTrace();

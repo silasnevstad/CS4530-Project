@@ -167,7 +167,7 @@ public class PublisherService {
         if (isInvalidInput(publisher, sheet)) {
             return new ArrayList<>();
         }
-        return getAllUpdates(publisher, sheet, id);
+        return getUpdates(publisher, sheet, id, "published");
     }
 
     /**
@@ -182,7 +182,7 @@ public class PublisherService {
         if (isInvalidInput(publisher, sheet)) {
             return new ArrayList<>();
         }
-        return getAllUpdates(publisher, sheet, id);
+        return getUpdates(publisher, sheet, id, "subscription");
     }
 
     /**
@@ -193,17 +193,18 @@ public class PublisherService {
      * @param id The ID of the last known update.
      * @return A list of Argument objects representing the updates.
      */
-    private List<Argument> getAllUpdates(String publisher, String sheet, String id) {
+    private List<Argument> getUpdates(String publisher, String sheet, String id, String type) {
         List<Argument> result = new ArrayList<>();
         String sql;
 
         // Check if the initial id is "0"
         if ("0".equals(id)) {
-            sql = "SELECT * FROM updates WHERE publisher = ? AND sheet = ?";
+            sql = "SELECT * FROM updates WHERE publisher = ? AND sheet = ? AND type = ?";
             try (Connection conn = DatabaseService.getConnection();
                  PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, publisher);
                 pstmt.setString(2, sheet);
+                pstmt.setString(3, type);
                 ResultSet rs = pstmt.executeQuery();
                 while (rs.next()) {
                     Argument argument = new Argument();
@@ -218,12 +219,13 @@ public class PublisherService {
             }
         } else {
             // Fetch updates after the given id
-            sql = "SELECT * FROM updates WHERE publisher = ? AND sheet = ? AND id > ?";
+            sql = "SELECT * FROM updates WHERE publisher = ? AND sheet = ? AND id > ? AND type = ?";
             try (Connection conn = DatabaseService.getConnection();
                  PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, publisher);
                 pstmt.setString(2, sheet);
                 pstmt.setString(3, id);
+                pstmt.setString(4, type);
                 ResultSet rs = pstmt.executeQuery();
                 while (rs.next()) {
                     Argument argument = new Argument();
