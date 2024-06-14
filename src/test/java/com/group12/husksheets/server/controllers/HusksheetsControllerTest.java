@@ -16,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 import spark.HaltException;
 import spark.Request;
 import spark.Response;
-import spark.Spark;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -302,7 +301,7 @@ public class HusksheetsControllerTest {
         String result = husksheetsController.handleGetUpdatesForSubscription(req, res);
         StringBuilder payloadBuilder = new StringBuilder();
         for (Argument update : updates) {
-            payloadBuilder.append(update.payload).append("\n");
+            payloadBuilder.append(update.payload);
         }
         Argument expectedArg = new Argument("publisher", "sheet", "2", payloadBuilder.toString().trim());
         Result expected = new Result(true, "Success", List.of(expectedArg));
@@ -330,8 +329,6 @@ public class HusksheetsControllerTest {
         Request req = mock(Request.class);
         Response res = mock(Response.class);
 
-        List<Argument> updates = new ArrayList<>();
-
         when(req.body()).thenReturn(gson.toJson(new Argument("", "", null, null)));
         when(publisherService.isInvalidInput("", "")).thenReturn(true);
 
@@ -355,7 +352,7 @@ public class HusksheetsControllerTest {
         String result = husksheetsController.handleGetUpdatesForPublished(req, res);
         StringBuilder payloadBuilder = new StringBuilder();
         for (Argument update : updates) {
-            payloadBuilder.append(update.payload).append("\n");
+            payloadBuilder.append(update.payload);
         }
         Argument expectedArg = new Argument("publisher", "sheet", "2", payloadBuilder.toString().trim());
         Result expected = new Result(true, "Success", List.of(expectedArg));
@@ -511,12 +508,12 @@ public class HusksheetsControllerTest {
         Response response = mock(Response.class);
 
         when(request.headers("Authorization")).thenReturn("valid-token");
-        when(userService.isValidUser("valid-token")).thenReturn(true);
+        when(userService.isValidAuth("valid-token")).thenReturn(true);
         when(request.body()).thenReturn(gson.toJson(new Argument("newPublisher", null, null, null)));
 
         simulateRequestWithMiddleware(request, response, () -> husksheetsController.handleRegister(request, response));
 
-        verify(userService).isValidUser("valid-token");
+        verify(userService).isValidAuth("valid-token");
         verify(response, never()).status(401);
     }
 
@@ -526,14 +523,14 @@ public class HusksheetsControllerTest {
         Response response = mock(Response.class);
 
         when(request.headers("Authorization")).thenReturn("invalid-token");
-        when(userService.isValidUser("invalid-token")).thenReturn(false);
+        when(userService.isValidAuth("invalid-token")).thenReturn(false);
         when(request.body()).thenReturn(gson.toJson(new Argument("newPublisher", null, null, null)));
 
         assertThrows(HaltException.class, () ->
                 simulateRequestWithMiddleware(request, response, () -> husksheetsController.handleRegister(request, response))
         );
 
-        verify(userService).isValidUser("invalid-token");
+        verify(userService).isValidAuth("invalid-token");
     }
 
     @Test
@@ -548,6 +545,6 @@ public class HusksheetsControllerTest {
                 simulateRequestWithMiddleware(request, response, () -> husksheetsController.handleRegister(request, response))
         );
 
-        verify(userService, never()).isValidUser(anyString());
+        verify(userService, never()).isValidAuth(anyString());
     }
 }

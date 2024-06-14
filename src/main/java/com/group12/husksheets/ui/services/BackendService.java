@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Result;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -13,11 +14,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
 // FIXME: Untested
 public class BackendService {
     private final String BASE_URL = "https://localhost:9443/api/v1";
-    private final String PROF_BASE_URL = "https://husksheets.fly.dev:9443/api/v1";
+//    private final String BASE_URL = "https://husksheets.fly.dev:443/api/v1";
     private final Gson gson = new Gson();
     private final String username;
     private final String password;
@@ -134,6 +136,36 @@ public class BackendService {
     }
 
     /**
+     * Gets all updates for a sheet
+     *
+     * @param publisher The publisher to get the sheet data for (owner of the sheet)
+     * @param sheet The name of the sheet to get the data for
+     * @param id The last update id
+     * @return The result containing the sheet data
+     * @throws Exception If the request fails
+     */
+    public Result getAllUpdates(String publisher, String sheet, String id) throws Exception {
+        Result subscriberUpdatesRes = getUpdatesForPublished(publisher, sheet, id);
+        Result publisherUpdatesRes = getUpdatesForSubscription(publisher, sheet, id);
+        Argument subscriberUpdates = subscriberUpdatesRes.value.get(0);
+        Argument publisherUpdates = publisherUpdatesRes.value.get(0);
+
+        String combinedPayload = (subscriberUpdates.payload != null ? subscriberUpdates.payload : "")
+                + (publisherUpdates.payload != null ? publisherUpdates.payload : "");
+
+        String lastId = null;
+        if (subscriberUpdates.id != null && publisherUpdates.id != null) {
+            lastId = subscriberUpdates.id.compareTo(publisherUpdates.id) > 0 ? subscriberUpdates.id : publisherUpdates.id;
+        } else if (subscriberUpdates.id != null) {
+            lastId = subscriberUpdates.id;
+        } else if (publisherUpdates.id != null) {
+            lastId = publisherUpdates.id;
+        }
+
+        return new Result(true, lastId, List.of(new Argument(publisher, sheet, lastId, combinedPayload)));
+    }
+
+    /**
      * Gets the updates for a subscription
      *
      * @param publisher The publisher to get the sheet data for (owner of the sheet)
@@ -220,7 +252,7 @@ public class BackendService {
      */
     private String getRequest(String endpoint) throws Exception {
         URL url = new URL(BASE_URL + endpoint);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", getAuthHeader());
 
@@ -237,7 +269,7 @@ public class BackendService {
      */
     private String postRequest(String endpoint, Argument arg) throws Exception {
         URL url = new URL(BASE_URL + endpoint);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Authorization", getAuthHeader());

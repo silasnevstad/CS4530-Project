@@ -24,7 +24,7 @@ public class UserService {
      * @param authHeader The authorization header containing the Base64 encoded credentials.
      * @return true if the user is valid, false otherwise.
      */
-    public boolean isValidUser(String authHeader) {
+    public boolean isValidAuth(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Basic ")) {
             return false;
         }

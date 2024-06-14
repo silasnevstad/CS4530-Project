@@ -259,7 +259,7 @@ public class HusksheetsController {
             lastId = updates.get(updates.size() - 1).id;
             StringBuilder payloadBuilder = new StringBuilder();
             for (Argument update : updates) {
-                payloadBuilder.append(update.payload).append("\n");
+                payloadBuilder.append(update.payload);
             }
             payload = payloadBuilder.toString().trim();
         }
@@ -279,7 +279,7 @@ public class HusksheetsController {
      */
     public void beforeFilter(Request request, Response response) {
         String authHeader = request.headers("Authorization");
-        if (authHeader == null || !userService.isValidUser(authHeader)) {
+        if (authHeader == null || !userService.isValidAuth(authHeader)) {
             halt(401, "Unauthorized");
         }
     }

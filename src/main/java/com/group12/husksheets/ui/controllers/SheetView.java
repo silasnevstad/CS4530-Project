@@ -1,5 +1,7 @@
-// Owner: Zach Pulichino
+// Owner: Zach Pulichino and Silas Nevstad
 package com.group12.husksheets.ui.controllers;
+
+import com.group12.husksheets.models.Argument;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import java.io.IOException;
@@ -9,7 +11,6 @@ import com.group12.husksheets.ui.services.BackendService;
 import com.group12.husksheets.ui.utils.ArithmeticParser;
 import com.group12.husksheets.ui.utils.CSVImporter;
 import com.group12.husksheets.ui.utils.FormulaParser;
-import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.group12.husksheets.ui.utils.ColumnNameUtils.getColumnIndex;
 
-public class SheetView extends Application {
+public class SheetView {
 
     // Constants for initial number of rows and columns
     public static final int NUM_ROWS = 100;
@@ -79,21 +80,12 @@ public class SheetView extends Application {
     // Instance of FormulaParser
     public FormulaParser formulaParser;
 
-    // Instance of BackendService
     private BackendService backendService;
     private String lastUpdateId = "0";
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    @Override
-    public void start(Stage primaryStage) {
-        openSheet(primaryStage, "publisherName1", "sheetName1", true);
-    }
-
-    public void openSheet(Stage stage, String publisherName, String sheetName, boolean isOwned) {
+    public void showSpreadsheetView(Stage primaryStage, String publisherName, String sheetName, boolean isOwned) {
         BorderPane root = new BorderPane();
-
-        // Initialize the BackendService
-        backendService = new BackendService("user1", "password1");
 
         // Initialize the TableView
         tableView = new TableView<>();
@@ -102,57 +94,8 @@ public class SheetView extends Application {
         // Initialize the FormulaParser
         formulaParser = new FormulaParser(tableView);
 
-        // Create columns for the TableView
-        for (int col = 0; col <= NUM_COLUMNS; col++) {
-            TableColumn<ObservableList<SimpleStringProperty>, String> column;
-            if (col == 0) {
-                // Create the row number column
-                column = new TableColumn<>("");
-                column.setCellFactory(colFactory -> new TableCell<>() {
-                    @Override
-                    protected void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (!empty) {
-                            setText(String.valueOf(getIndex() + 1));
-                        } else {
-                            setText(null);
-                        }
-                    }
-                });
-            } else {
-                // Create data columns
-                final int colIndex = col - 1;
-                column = new TableColumn<>(getColumnHeader(colIndex));
-                column.setCellValueFactory(cellData -> cellData.getValue().get(colIndex));
-                column.setCellFactory(colFactory -> new AlignedTextFieldTableCell());
-                column.setOnEditCommit(event -> {
-                    String oldValue = event.getOldValue();
-                    String newValue = event.getNewValue();
-                    undoStack.push(new EditAction(event.getRowValue(), colIndex, oldValue, newValue, EditAction.ActionType.VALUE_CHANGE));
-                    event.getRowValue().get(colIndex).set(newValue);
-                    redoStack.clear();
-                    String cellKey = getCellKey(event.getRowValue(), colIndex);
-                    formulas.put(cellKey, newValue);
-                    changeTracker.put(cellKey, newValue);
-                    evaluateCell(event.getRowValue(), colIndex);
-                });
-                column.setPrefWidth(100);
-            }
-            tableView.getColumns().add(column);
-        }
+        openBlankSheet();
 
-        // Create data for the TableView
-        ObservableList<ObservableList<SimpleStringProperty>> data = FXCollections.observableArrayList();
-        for (int row = 0; row < NUM_ROWS; row++) {
-            ObservableList<SimpleStringProperty> rowData = FXCollections.observableArrayList();
-            for (int col = 0; col < NUM_COLUMNS; col++) {
-                rowData.add(new SimpleStringProperty(""));
-            }
-            data.add(rowData);
-        }
-        tableView.setItems(data);
-
-        // Initialize the formula field
         formulaField = new TextField();
         formulaField.setEditable(true);
         formulaField.setOnAction(e -> {
@@ -171,11 +114,10 @@ public class SheetView extends Application {
             }
         });
 
-        // Update the formula field when a new cell is selected
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null && !tableView.getSelectionModel().getSelectedCells().isEmpty()) {
                 TablePosition selectedCell = tableView.getSelectionModel().getSelectedCells().get(0);
-                if (selectedCell.getColumn() > 0) { // Ensure the column index is valid
+                if (selectedCell.getColumn() > 0) {
                     String cellKey = getCellKey(newSelection, selectedCell.getColumn() - 1);
                     formulaField.setText(formulas.getOrDefault(cellKey, newSelection.get(selectedCell.getColumn() - 1).get()));
                 }
@@ -184,7 +126,6 @@ public class SheetView extends Application {
 
         VBox topContainer = new VBox();
 
-        // Initialize the title field
         titleField = new TextField("Untitled Spreadsheet");
         titleField.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
         titleField.setEditable(true);
@@ -226,7 +167,7 @@ public class SheetView extends Application {
         // Set action for "Back to Home" button
         backToHomeButton.setOnAction(e -> {
             checkForUpdatesAndSendChanges(publisherName, sheetName, isOwned);
-            navigateToSheetSelect(stage, publisherName);
+            navigateToSheetSelect(primaryStage, publisherName);
         });
 
         // Add controls to the toolbar
@@ -256,36 +197,114 @@ public class SheetView extends Application {
             contextMenu.show(tableView, event.getScreenX(), event.getScreenY());
         });
 
-        // Call to fetch updates when a sheet is opened
-        // Might be unnecessary since scheduler "becomes enabled first after the given initial delay"
-//    fetchAndApplyUpdates(publisherName, sheetName, lastUpdateId, isOwned);
-
-        // Schedule periodic tasks
-        scheduler.scheduleAtFixedRate(() -> checkForUpdatesAndSendChanges(publisherName, sheetName, isOwned), 0, 5, TimeUnit.SECONDS);
+        loadSheet(publisherName, sheetName);
+        scheduler.scheduleAtFixedRate(() -> checkForUpdatesAndSendChanges(publisherName, sheetName, isOwned), 5, 5, TimeUnit.SECONDS);
 
         Scene scene = new Scene(root);
-        stage.setScene(scene);
-        stage.setTitle("HuskySheets");
-        stage.setMaximized(true);
-        stage.show();
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("HuskySheets");
+        primaryStage.setMaximized(true);
+        primaryStage.show();
 
-        // Store reference to this instance for later access
-        stage.setUserData(this);
+        primaryStage.setUserData(this);
+    }
+
+    public void openBlankSheet() {
+        tableView.getColumns().clear();
+        for (int col = 0; col <= NUM_COLUMNS; col++) {
+            TableColumn<ObservableList<SimpleStringProperty>, String> column;
+            if (col == 0) {
+                column = new TableColumn<>("");
+                column.setCellFactory(colFactory -> new TableCell<>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (!empty) {
+                            setText(String.valueOf(getIndex() + 1));
+                        } else {
+                            setText(null);
+                        }
+                    }
+                });
+            } else {
+                final int colIndex = col - 1;
+                column = new TableColumn<>(getColumnHeader(colIndex));
+                column.setCellValueFactory(cellData -> cellData.getValue().get(colIndex));
+                column.setCellFactory(colFactory -> new AlignedTextFieldTableCell());
+                column.setOnEditCommit(event -> {
+                    String oldValue = event.getOldValue();
+                    String newValue = event.getNewValue();
+                    undoStack.push(new EditAction(event.getRowValue(), colIndex, oldValue, newValue, EditAction.ActionType.VALUE_CHANGE));
+                    event.getRowValue().get(colIndex).set(newValue);
+                    redoStack.clear();
+                    String cellKey = getCellKey(event.getRowValue(), colIndex);
+                    formulas.put(cellKey, newValue);
+                    changeTracker.put(cellKey, newValue);
+                    evaluateCell(event.getRowValue(), colIndex);
+                });
+                column.setPrefWidth(100);
+            }
+            tableView.getColumns().add(column);
+        }
+
+        ObservableList<ObservableList<SimpleStringProperty>> data = FXCollections.observableArrayList();
+        for (int row = 0; row < NUM_ROWS; row++) {
+            ObservableList<SimpleStringProperty> rowData = FXCollections.observableArrayList();
+            for (int col = 0; col < NUM_COLUMNS; col++) {
+                rowData.add(new SimpleStringProperty(""));
+            }
+            data.add(rowData);
+        }
+        tableView.setItems(data);
+    }
+
+    private void saveSheetData() {
+        StringBuilder data = new StringBuilder();
+        for (int row = 0; row < tableView.getItems().size(); row++) {
+            for (int col = 0; col < tableView.getColumns().size(); col++) {
+                if (col == 0) continue; // Skip the row number column
+                ObservableList<SimpleStringProperty> rowData = tableView.getItems().get(row);
+                data.append(rowData.get(col).get()).append(",");
+            }
+            data.deleteCharAt(data.length() - 1); // Remove trailing comma
+            data.append("\n");
+        }
+        // Save `data.toString()` to a file or send to backend
     }
 
     /**
-     * Fetch updates from the backend service and apply them to the sheet.
+     * Loads the entire sheet data from the server.
      *
-     * @param publisher The name of the publisher
-     * @param sheet The name of the sheet
-     * @param id The last id received ("0" for initial fetch)
+     * @param publisher the publisher of the sheet
+     * @param sheet the name of the sheet
+     */
+    private void loadSheet(String publisher, String sheet) {
+        try {
+            Result result = backendService.getAllUpdates(publisher, sheet, "0");
+            if (result.success && result.value != null && !result.value.isEmpty()) {
+                Argument arg = result.value.get(0);
+                applyUpdates(arg.payload);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Fetch updates from the server and apply them to the sheet.
+     *
+     * @param publisher the publisher of the sheet
+     * @param sheet the name of the sheet
+     * @param id the last update ID
+     * @param isOwned whether the sheet is owned by the user
      */
     private void fetchAndApplyUpdates(String publisher, String sheet, String id, boolean isOwned) {
         try {
             Result result = backendService.getUpdates(publisher, sheet, id, isOwned);
             if (result.success && result.value != null && !result.value.isEmpty()) {
-                String payload = result.value.get(0).payload;
-                lastUpdateId = result.value.get(0).id;
+                Argument arg = result.value.get(0);
+                String payload =arg.payload;
+                lastUpdateId = arg.id;
                 applyUpdates(payload);
             }
         } catch (Exception e) {
@@ -298,21 +317,21 @@ public class SheetView extends Application {
      * @param payload The payload containing the updates, separated by newlines
      */
     private void applyUpdates(String payload) {
-        String[] updates = payload.split("\n");
-        for (String update : updates) {
+        String[] updates = payload.split("\\$");
+
+        for (int i = 1; i < updates.length; i++) {
+            String update = updates[i];
             String[] parts = update.split(" ", 2);
+
             if (parts.length == 2) {
-                String cell = parts[0].substring(1);  // Remove the dollar sign
+                String cell = parts[0];
                 String value = parts[1];
 
-                // Separate the column part and row part of the cell reference
                 String columnPart = cell.replaceAll("\\d", "");
                 String rowPart = cell.replaceAll("\\D", "");
 
                 int col = getColumnIndex(columnPart);
-                int row = Integer.parseInt(rowPart) - 1;  // Convert to 0-based index
-
-                System.out.println("Applying update to cell " + cell + " with value " + value);
+                int row = Integer.parseInt(rowPart) - 1;
 
                 if (row < NUM_ROWS && col < NUM_COLUMNS) {
                     ObservableList<SimpleStringProperty> rowData = tableView.getItems().get(row);
@@ -324,6 +343,10 @@ public class SheetView extends Application {
 
     /**
      * Check for updates from the server and send local changes if any.
+     *
+     * @param publisherName the publisher of the sheet
+     * @param sheetName the name of the sheet
+     * @param isOwned whether the sheet is owned by the user
      */
     private void checkForUpdatesAndSendChanges(String publisherName, String sheetName, boolean isOwned) {
         try {
@@ -334,7 +357,7 @@ public class SheetView extends Application {
             String payload = collectLocalChanges();
             if (!payload.isEmpty()) {
                 backendService.updateSheet(publisherName, sheetName, payload, isOwned);
-                changeTracker.clear(); // Clear the change tracker after sending changes
+                changeTracker.clear();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -351,9 +374,8 @@ public class SheetView extends Application {
 
         for (Map.Entry<String, String> entry : changeTracker.entrySet()) {
             String cell = getColumnHeader(Integer.parseInt(entry.getKey().split(",")[1])) + (Integer.parseInt(entry.getKey().split(",")[0]) + 1);
-            changes.append("$").append(cell).append(" ").append(entry.getValue()).append("\n");
+            changes.append("$").append(cell).append(" ").append(entry.getValue());
         }
-
         return changes.toString().trim();
     }
 
@@ -633,6 +655,14 @@ public class SheetView extends Application {
         }
     }
 
+    public void setBackendService(BackendService backendService) {
+        this.backendService = backendService;
+    }
+
+    public void setTableView(TableView<ObservableList<SimpleStringProperty>> tableView) {
+        this.tableView = tableView;
+    }
+
     // Class representing an edit action for undo/redo functionality
     public class EditAction {
         // Enum to specify the type of action
@@ -726,16 +756,6 @@ public class SheetView extends Application {
             this.cellAlignment = alignment;
             setStyle(getStyle() + "-fx-alignment: " + alignment.toString().replace("_", "-").toLowerCase() + ";");
         }
-    }
-
-    @Override
-    public void stop() throws Exception {
-        scheduler.shutdown();
-        super.stop();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
     // Method to navigate back to the sheet select page

@@ -2,7 +2,6 @@ package com.group12.husksheets.ui.controllers;
 
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Result;
-import com.group12.husksheets.ui.Main;
 import com.group12.husksheets.ui.services.BackendService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,9 +31,8 @@ public class SheetSelectPageController {
   @FXML
   private ListView<String> sheetsListView;
 
-  private Main mainApp; // Reference to the Main application
-
   private BackendService backendService;
+  private SheetView sheetView;
 
   public SheetSelectPageController() {
     // Default constructor
@@ -50,10 +48,6 @@ public class SheetSelectPageController {
 
   public void setBackendService(BackendService backendService) {
     this.backendService = backendService;
-  }
-
-  public void setMainApp(Main mainApp) {
-    this.mainApp = mainApp;
   }
 
   public void run() {
@@ -76,6 +70,7 @@ public class SheetSelectPageController {
     }
   }
 
+  // Owner: Silas Nevstad and Zach Pulichino
   private void fetchSheets() {
     try {
       Result result = backendService.getSheets(publisherName);
@@ -100,7 +95,7 @@ public class SheetSelectPageController {
     }
   }
 
-  // Owner: Zach Pulichino
+  // Owner: Zach Pulichino and Silas Nevstad
   public void newSheet() {
     TextInputDialog dialog = new TextInputDialog("NewSheet");
     dialog.setTitle("Create New Sheet");
@@ -145,9 +140,10 @@ public class SheetSelectPageController {
     }
   }
 
-  // Owner: Zach Pulichino
   private void openSheet(String publisher, String sheet, boolean isOwned) {
-    mainApp.showSpreadsheetView(stage, publisher, sheet, isOwned);
+    sheetView = new SheetView();
+    sheetView.setBackendService(backendService);
+    sheetView.showSpreadsheetView(stage, publisher, sheet, isOwned);
   }
 
   // Owner: Zach Pulichino

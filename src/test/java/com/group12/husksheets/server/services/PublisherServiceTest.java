@@ -170,8 +170,8 @@ public class PublisherServiceTest {
         publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheet");
 
-        assertTrue(publisherService.updatePublished("publisher", "sheet", "payload1"));
-        assertTrue(publisherService.updatePublished("publisher", "sheet", "payload2"));
+        assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload1"));
+        assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload2"));
 
         List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(2, updates.size());
@@ -186,7 +186,7 @@ public class PublisherServiceTest {
         publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheet");
 
-        assertTrue(publisherService.updatePublished("publisher", "sheet", "payload1\npayload2"));
+        assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload1\npayload2"));
 
         List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(2, updates.size());
@@ -201,8 +201,8 @@ public class PublisherServiceTest {
         publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheet");
 
-        assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload1"));
-        assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload2"));
+        assertTrue(publisherService.updatePublished("publisher", "sheet", "payload1"));
+        assertTrue(publisherService.updatePublished("publisher", "sheet", "payload2"));
 
         List<Argument> updates = publisherService.getUpdatesForSubscription("publisher", "sheet", "0");
         assertEquals(2, updates.size());
@@ -217,7 +217,7 @@ public class PublisherServiceTest {
         publisherService.addPublisher("publisher");
         publisherService.createSheet("publisher", "sheet");
 
-        assertTrue(publisherService.updateSubscription("publisher", "sheet", "payload1 1\npayload2 2"));
+        assertTrue(publisherService.updatePublished("publisher", "sheet", "payload1 1\npayload2 2"));
 
         List<Argument> updates = publisherService.getUpdatesForSubscription("publisher", "sheet", "0");
         assertEquals(2, updates.size());
@@ -255,7 +255,7 @@ public class PublisherServiceTest {
         updates.add(new Argument("publisher", "sheet", "1", "payload1"));
         updates.add(new Argument("publisher", "sheet", "2", "payload2"));
 
-        updates.forEach(update -> publisherService.updateSubscription("publisher", "sheet", update.payload));
+        updates.forEach(update -> publisherService.updatePublished("publisher", "sheet", update.payload));
 
         List<Argument> retrievedUpdates = publisherService.getUpdatesForSubscription("publisher", "sheet", "0");
         assertEquals(2, retrievedUpdates.size());
@@ -263,8 +263,8 @@ public class PublisherServiceTest {
         assertEquals("payload2", retrievedUpdates.get(1).payload);
 
         String lastId = retrievedUpdates.get(retrievedUpdates.size() - 1).id;
-        publisherService.updateSubscription("publisher", "sheet", "payload3");
-        publisherService.updateSubscription("publisher", "sheet", "payload4");
+        publisherService.updatePublished("publisher", "sheet", "payload3");
+        publisherService.updatePublished("publisher", "sheet", "payload4");
 
         retrievedUpdates = publisherService.getUpdatesForSubscription("publisher", "sheet", lastId);
         assertEquals(2, retrievedUpdates.size());
@@ -281,7 +281,7 @@ public class PublisherServiceTest {
         updates.add(new Argument("publisher", "sheet", "1", "payload1"));
         updates.add(new Argument("publisher", "sheet", "2", "payload2"));
 
-        updates.forEach(update -> publisherService.updatePublished("publisher", "sheet", update.payload));
+        updates.forEach(update -> publisherService.updateSubscription("publisher", "sheet", update.payload));
 
         List<Argument> retrievedUpdates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(2, retrievedUpdates.size());
@@ -289,8 +289,8 @@ public class PublisherServiceTest {
         assertEquals("payload2", retrievedUpdates.get(1).payload);
 
         String lastId = retrievedUpdates.get(retrievedUpdates.size() - 1).id;
-        publisherService.updatePublished("publisher", "sheet", "payload3");
-        publisherService.updatePublished("publisher", "sheet", "payload4");
+        publisherService.updateSubscription("publisher", "sheet", "payload3");
+        publisherService.updateSubscription("publisher", "sheet", "payload4");
 
         retrievedUpdates = publisherService.getUpdatesForPublished("publisher", "sheet", lastId);
         assertEquals(2, retrievedUpdates.size());
@@ -360,7 +360,7 @@ public class PublisherServiceTest {
         publisherService.createSheet("publisher", "sheet");
 
         String specialPayload = "payload!@#$%^&*()_+{}|:\"<>?`~-=[]\\;',./";
-        assertTrue(publisherService.updatePublished("publisher", "sheet", specialPayload));
+        assertTrue(publisherService.updateSubscription("publisher", "sheet", specialPayload));
 
         List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(1, updates.size());
@@ -373,7 +373,7 @@ public class PublisherServiceTest {
         publisherService.createSheet("publisher", "sheet");
 
         String longPayload = "a".repeat(10000); // 10,000 characters long
-        assertTrue(publisherService.updatePublished("publisher", "sheet", longPayload));
+        assertTrue(publisherService.updateSubscription("publisher", "sheet", longPayload));
 
         List<Argument> updates = publisherService.getUpdatesForPublished("publisher", "sheet", "0");
         assertEquals(1, updates.size());
