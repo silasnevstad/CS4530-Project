@@ -61,6 +61,7 @@ public class WelcomePageController {
     });
   }
 
+  // Owner: Zach Pulichino
   public void tryUserLogin(String publisherName, String username, String password) throws Exception {
     String authHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
     if (userService.isValidUser(authHeader)) {
