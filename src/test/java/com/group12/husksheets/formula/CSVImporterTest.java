@@ -1,29 +1,35 @@
 package com.group12.husksheets.formula;
 
-//Owner:Jason King
+//Owner:Jason King and Silas Nevstad
 
 import com.group12.husksheets.ui.utils.CSVImporter;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
+import javafx.scene.Scene;
 import javafx.scene.control.TableView;
-import org.junit.jupiter.api.BeforeEach;
+import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.testfx.framework.junit5.ApplicationTest;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class CSVImporterTest {
+public class CSVImporterTest extends ApplicationTest {
 
     private TableView<ObservableList<SimpleStringProperty>> tableView;
 
-    @BeforeEach
-    void setUp() {
+    @Override
+    public void start(Stage stage) {
         tableView = new TableView<>();
+        Scene scene = new Scene(tableView);
+        stage.setScene(scene);
+        stage.show();
     }
 
     @Test
@@ -36,8 +42,9 @@ class CSVImporterTest {
             writer.write("Charlie,35,Chicago\n");
         }
 
+        Platform.runLater(() -> CSVImporter.importCSV(csvFile, tableView));
 
-        CSVImporter.importCSV(csvFile, tableView);
+        waitForFxEvents();
 
         assertEquals(3, tableView.getItems().size());
         assertEquals(4, tableView.getColumns().size()); // Includes row number column
@@ -65,34 +72,12 @@ class CSVImporterTest {
         assertEquals("Chicago", row3.get(2).get());
     }
 
-    /*
-    @Test
-    void testParseCSVLine() {
-        String line = "Alice,30,\"New York, USA\"";
-        String[] values = CSVImporter.parseCSVLine(line);
-        assertArrayEquals(new String[]{"Alice", "30", "New York, USA"}, values);
+    private void waitForFxEvents() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-
-    @Test
-    void testParseCSVLineWithCommasInQuotes() {
-        String line = "\"Doe, John\",42,\"San Francisco, CA\"";
-        String[] values = CSVImporter.parseCSVLine(line);
-        assertArrayEquals(new String[]{"Doe, John", "42", "San Francisco, CA"}, values);
-    }
-
-    @Test
-    void testParseEmptyCSVLine() {
-        String line = "";
-        String[] values = CSVImporter.parseCSVLine(line);
-        assertArrayEquals(new String[]{""}, values);
-    }
-
-    @Test
-    void testParseNullCSVLine() {
-        String[] values = CSVImporter.parseCSVLine(null);
-        assertArrayEquals(new String[0], values);
-    }
-    */
-
 }
 

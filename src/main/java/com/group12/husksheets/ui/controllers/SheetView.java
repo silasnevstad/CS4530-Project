@@ -2,7 +2,6 @@
 package com.group12.husksheets.ui.controllers;
 
 import com.group12.husksheets.models.Argument;
-import javafx.application.Application;
 import com.group12.husksheets.models.Result;
 import com.group12.husksheets.ui.services.BackendService;
 import com.group12.husksheets.ui.utils.ArithmeticParser;
@@ -38,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.group12.husksheets.ui.utils.ColumnNameUtils.getColumnIndex;
 
-public class SheetView extends Application {
+public class SheetView {
 
     // Constants for initial number of rows and columns
     public static final int NUM_ROWS = 100;
@@ -85,16 +84,6 @@ public class SheetView extends Application {
     private BackendService backendService;
     private String lastUpdateId = "0";
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    @Override
-    public void start(Stage primaryStage) {
-        showSpreadsheetView(primaryStage, "test", "test", true);
-    }
-
-    @Override
-    public void stop() {
-        scheduler.shutdown();
-    }
 
     public void showSpreadsheetView(Stage primaryStage, String publisherName, String sheetName, boolean isOwned) {
         BorderPane root = new BorderPane();

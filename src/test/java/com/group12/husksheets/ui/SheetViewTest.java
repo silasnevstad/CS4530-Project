@@ -40,7 +40,7 @@ public class SheetViewTest {
       try {
         sheetView = new SheetView();
         stage = new Stage();
-        sheetView.start(stage); // Start the application
+        sheetView.showSpreadsheetView(stage, "testPublisher", "testSheet", true);
         latch.countDown();
       } catch (Exception e) {
         e.printStackTrace();
