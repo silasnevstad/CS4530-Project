@@ -8,6 +8,7 @@ import com.group12.husksheets.ui.services.BackendService;
 import com.group12.husksheets.ui.utils.ArithmeticParser;
 import com.group12.husksheets.ui.utils.CSVImporter;
 import com.group12.husksheets.ui.utils.FormulaParser;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -51,6 +52,10 @@ public class SheetView extends Application {
 
     // TextField for the title of the spreadsheet
     public TextField titleField;
+
+    // Label to display the last saved time
+    private Label updateStatusLabel;
+    private long lastUpdateTime = System.currentTimeMillis();
 
     // Stacks to manage undo and redo operations
     public Stack<EditAction> undoStack = new Stack<>();
@@ -182,7 +187,18 @@ public class SheetView extends Application {
             new Label("Font:"), fontComboBox, new Label("Size:"), fontSizeField,
             new Label("Text Color:"), textColorPicker, new Label("Background Color:"), backgroundColorPicker, backToHomeButton);
 
+
+        scheduler.scheduleAtFixedRate(() -> Platform.runLater(this::updateElapsedTime), 1, 1, TimeUnit.SECONDS);
+
         topContainer.getChildren().addAll(titleBox, toolBar, formulaField);
+
+        // Create a status bar with the update status label
+        updateStatusLabel = new Label("Ready");
+        updateStatusLabel.setStyle("-fx-padding: 5px; -fx-font-size: 14px;");
+        HBox statusBar = new HBox(updateStatusLabel);
+        statusBar.setStyle("-fx-padding: 10px; -fx-background-color: #f1f1f1;");
+
+        root.setBottom(statusBar);
 
         root.setTop(topContainer);
         root.setCenter(tableView);
@@ -205,7 +221,7 @@ public class SheetView extends Application {
         });
 
         loadSheet(publisherName, sheetName);
-        scheduler.scheduleAtFixedRate(() -> checkForUpdatesAndSendChanges(publisherName, sheetName, isOwned), 5, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> checkForUpdatesAndSendChanges(publisherName, sheetName, isOwned), 5, 10, TimeUnit.SECONDS);
 
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
@@ -263,20 +279,6 @@ public class SheetView extends Application {
             data.add(rowData);
         }
         tableView.setItems(data);
-    }
-
-    private void saveSheetData() {
-        StringBuilder data = new StringBuilder();
-        for (int row = 0; row < tableView.getItems().size(); row++) {
-            for (int col = 0; col < tableView.getColumns().size(); col++) {
-                if (col == 0) continue; // Skip the row number column
-                ObservableList<SimpleStringProperty> rowData = tableView.getItems().get(row);
-                data.append(rowData.get(col).get()).append(",");
-            }
-            data.deleteCharAt(data.length() - 1); // Remove trailing comma
-            data.append("\n");
-        }
-        // Save `data.toString()` to a file or send to backend
     }
 
     /**
@@ -356,6 +358,7 @@ public class SheetView extends Application {
      * @param isOwned whether the sheet is owned by the user
      */
     private void checkForUpdatesAndSendChanges(String publisherName, String sheetName, boolean isOwned) {
+        Platform.runLater(() -> updateStatusLabel.setText("Fetching updates..."));
         try {
             // Fetch updates from the server
             fetchAndApplyUpdates(publisherName, sheetName, lastUpdateId, isOwned);
@@ -366,9 +369,22 @@ public class SheetView extends Application {
                 backendService.updateSheet(publisherName, sheetName, payload, isOwned);
                 changeTracker.clear();
             }
+            // Update last update time
+            lastUpdateTime = System.currentTimeMillis();
+            Platform.runLater(() -> updateStatusLabel.setText("Last update: " + (System.currentTimeMillis() - lastUpdateTime) / 1000 + " seconds ago"));
         } catch (Exception e) {
             e.printStackTrace();
+            Platform.runLater(() -> updateStatusLabel.setText("Error during update"));
         }
+    }
+
+    /**
+     * Update the elapsed time since the last update.
+     */
+    private void updateElapsedTime() {
+        long currentTime = System.currentTimeMillis();
+        long elapsedSeconds = (currentTime - lastUpdateTime) / 1000;
+        updateStatusLabel.setText("Time since last update: " + elapsedSeconds + " seconds");
     }
 
     /**
