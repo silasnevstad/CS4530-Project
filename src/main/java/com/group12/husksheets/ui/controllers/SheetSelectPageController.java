@@ -2,15 +2,13 @@ package com.group12.husksheets.ui.controllers;
 
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Result;
-import com.group12.husksheets.ui.services.BackendService;
 import com.group12.husksheets.ui.Main;
+import com.group12.husksheets.ui.services.BackendService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -27,6 +25,9 @@ public class SheetSelectPageController {
 
   @FXML
   private Button createNewSheetButton;
+
+  @FXML
+  private Button deleteSheetButton;
 
   @FXML
   private ListView<String> sheetsListView;
@@ -52,7 +53,7 @@ public class SheetSelectPageController {
   }
 
   public void setMainApp(Main mainApp) {
-      this.mainApp = mainApp;
+    this.mainApp = mainApp;
   }
 
   public void run() {
@@ -65,6 +66,7 @@ public class SheetSelectPageController {
       stage.show();
 
       createNewSheetButton.setOnAction(e -> newSheet());
+      deleteSheetButton.setOnAction(e -> deleteSelectedSheet());
       publisherNameLabel.setText(publisherName);
 
       fetchSheets();
@@ -94,28 +96,62 @@ public class SheetSelectPageController {
       });
 
     } catch (Exception e) {
-      System.out.println("Unable to establish connection: " + e.getMessage());
+      showError("Unable to fetch sheets", e.getMessage());
     }
   }
 
   public void newSheet() {
-    try {
-      Result result = backendService.createSheet(publisherName, "NewSheet");
-      if (result.success) {
-        openSheet(publisherName, "NewSheet", true);
-      } else {
-        rejectNewSheet();
+    TextInputDialog dialog = new TextInputDialog("NewSheet");
+    dialog.setTitle("Create New Sheet");
+    dialog.setHeaderText("Enter the name for the new sheet:");
+    dialog.setContentText("Sheet name:");
+
+    // Traditional way to get the response value.
+    dialog.showAndWait().ifPresent(sheetName -> {
+      try {
+        Result result = backendService.createSheet(publisherName, sheetName);
+        if (result.success) {
+          openSheet(publisherName, sheetName, true);
+        } else {
+          showError("Failed to create new sheet", "The sheet could not be created.");
+        }
+      } catch (Exception e) {
+        showError("Failed to create new sheet", e.getMessage());
       }
-    } catch (Exception e) {
-      System.out.println("Failed to create new sheet: " + e.getMessage());
-    }
+    });
   }
 
-  public void rejectNewSheet() {
-    System.out.println("Failed to create new sheet.");
+  private void deleteSelectedSheet() {
+    String selectedSheet = sheetsListView.getSelectionModel().getSelectedItem();
+    if (selectedSheet != null) {
+      String sheetName = selectedSheet.split(" \\(owned by ")[0];
+      String sheetPublisher = selectedSheet.split(" \\(owned by ")[1].replace(")", "");
+      if (sheetPublisher.equals(publisherName)) {
+        try {
+          Result result = backendService.deleteSheet(publisherName, sheetName);
+          if (result.success) {
+            sheetsListView.getItems().remove(selectedSheet);
+          } else {
+            showError("Failed to delete sheet", "The sheet could not be deleted.");
+          }
+        } catch (Exception e) {
+          showError("Failed to delete sheet", e.getMessage());
+        }
+      } else {
+        showError("Cannot delete sheet", "You can only delete sheets you own.");
+      }
+    }
   }
 
   private void openSheet(String publisher, String sheet, boolean isOwned) {
     mainApp.showSpreadsheetView(stage, publisher, sheet, isOwned);
+  }
+
+  private void showError(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
   }
 }
