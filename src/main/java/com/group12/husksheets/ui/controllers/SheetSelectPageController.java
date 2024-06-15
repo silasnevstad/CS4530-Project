@@ -1,8 +1,8 @@
-// Owner: Silas Nevstad, Nicholas Gillespie, Zach Pulichino
 package com.group12.husksheets.ui.controllers;
 
 import com.group12.husksheets.models.Argument;
 import com.group12.husksheets.models.Result;
+import com.group12.husksheets.ui.Main;
 import com.group12.husksheets.ui.services.BackendService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,25 +32,51 @@ public class SheetSelectPageController {
   @FXML
   private ListView<String> sheetsListView;
 
-  private BackendService backendService;
-  private SheetView sheetView;
+  private Main mainApp; // Reference to the Main application
 
+  private BackendService backendService;
+
+  // Owner: Nicholas Gillespie
   public SheetSelectPageController() {
     // Default constructor
   }
 
+  // Owner: Nicholas Gillespie
   public void setStage(Stage stage) {
     this.stage = stage;
   }
 
+  // Owner: Nicholas Gillespie
+  public Stage getStage() {
+    return this.stage;
+  }
+
+  // Owner: Nicholas Gillespie
   public void setPublisherName(String publisherName) {
     this.publisherName = publisherName;
   }
 
+  // Owner: Nicholas Gillespie
   public void setBackendService(BackendService backendService) {
     this.backendService = backendService;
   }
 
+  // Owner: Nicholas Gillespie
+  public BackendService getBackendService() {
+    return this.backendService;
+  }
+
+  // Owner: Nicholas Gillespie
+  public void setMainApp(Main mainApp) {
+    this.mainApp = mainApp;
+  }
+
+  // Owner: Nicholas Gillespie
+  public Main getMainApp() {
+    return this.mainApp;
+  }
+
+  // Owner: Nicholas Gillespie
   public void run() {
     try {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/SheetSelectPage.fxml"));
@@ -71,7 +97,7 @@ public class SheetSelectPageController {
     }
   }
 
-  // Owner: Silas Nevstad and Zach Pulichino
+  // Owner: Nicholas Gillespie
   private void fetchSheets() {
     try {
       Result result = backendService.getSheets(publisherName);
@@ -96,7 +122,7 @@ public class SheetSelectPageController {
     }
   }
 
-  // Owner: Zach Pulichino and Silas Nevstad
+  // Owner: Zach Pulichino
   public void newSheet() {
     TextInputDialog dialog = new TextInputDialog("NewSheet");
     dialog.setTitle("Create New Sheet");
@@ -141,10 +167,9 @@ public class SheetSelectPageController {
     }
   }
 
+  // Owner: Zach Pulichino
   private void openSheet(String publisher, String sheet, boolean isOwned) {
-    sheetView = new SheetView();
-    sheetView.setBackendService(backendService);
-    sheetView.showSpreadsheetView(stage, publisher, sheet, isOwned);
+    mainApp.showSpreadsheetView(stage, publisher, sheet, isOwned);
   }
 
   // Owner: Zach Pulichino
@@ -154,5 +179,10 @@ public class SheetSelectPageController {
     alert.setHeaderText(null);
     alert.setContentText(message);
     alert.showAndWait();
+  }
+
+  // Owner: Nicholas Gillespie
+  public String getPublisherName() {
+    return this.publisherName;
   }
 }
