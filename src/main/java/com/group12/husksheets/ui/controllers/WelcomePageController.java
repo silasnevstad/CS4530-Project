@@ -1,8 +1,9 @@
-// Owner: Silas Nevstad, Nicholas Gillespie, Zach Pulichino
 package com.group12.husksheets.ui.controllers;
 
+import com.group12.husksheets.ui.Main;
 import com.group12.husksheets.ui.models.WelcomePage;
 import com.group12.husksheets.server.services.UserService;
+
 import com.group12.husksheets.ui.services.BackendService;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -14,10 +15,11 @@ import java.util.Base64;
 
 public class WelcomePageController {
 
-  private final Stage stage;
-  private final WelcomePage welcomePage;
-  private final UserService userService;
-  private BackendService backendService;
+  protected final Stage stage;
+  protected final WelcomePage welcomePage;
+  protected final UserService userService;
+  protected BackendService backendService;
+  protected Main mainApp;
 
   @FXML
   private Button loginButton;
@@ -31,12 +33,14 @@ public class WelcomePageController {
   @FXML
   private TextField passwordEntered;
 
-  public WelcomePageController(Stage stage) {
+  public WelcomePageController(Stage stage, Main mainApp) {
     this.stage = stage;
     this.userService = new UserService();
     this.welcomePage = new WelcomePage(this);
+    this.mainApp = mainApp;
   }
 
+  // Owner: Nicholas Gillespie
   public void run() {
     try {
       Scene scene = welcomePage.load();
@@ -48,6 +52,7 @@ public class WelcomePageController {
     }
   }
 
+  // Owner: Nicholas Gillespie
   private void initializeButtonActions() {
     loginButton.setOnAction(e -> {
       try {
@@ -61,35 +66,39 @@ public class WelcomePageController {
   // Owner: Zach Pulichino
   public void tryUserLogin(String publisherName, String username, String password) throws Exception {
     String authHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-    if (userService.isValidAuth(authHeader)) {
+    if (userService.isValidUser(authHeader)) {
       this.backendService = new BackendService(username, password);
       if (backendService.doesPublisherExist(publisherName)) {
-        acceptUser(publisherName);
+        SheetSelectPageController controller = new SheetSelectPageController();
+        acceptUser(publisherName, controller);
       } else {
         backendService.register(publisherName);
-        acceptUser(publisherName);
+        SheetSelectPageController controller = new SheetSelectPageController();
+        acceptUser(publisherName, controller);
       }
     } else {
       rejectUser();
     }
   }
 
-  public void acceptUser(String publisherName) {
-    createSheetSelectPage(publisherName);
+  // Owner: Nicholas Gillespie
+  public void acceptUser(String publisherName, SheetSelectPageController controller) {
+    createSheetSelectPage(publisherName, controller);
   }
 
+  // Owner: Nicholas Gillespie
   public void rejectUser() {
     usernameEntered.clear();
     passwordEntered.clear();
   }
 
   // Owner: Zach Pulichino
-  private void createSheetSelectPage(String publisherName) {
+  public void createSheetSelectPage(String publisherName, SheetSelectPageController controller) {
     try {
-      SheetSelectPageController controller = new SheetSelectPageController();
       controller.setPublisherName(publisherName);
       controller.setStage(stage);
       controller.setBackendService(backendService);
+      controller.setMainApp(mainApp);
       controller.run();
     } catch (Exception e) {
       e.printStackTrace();
