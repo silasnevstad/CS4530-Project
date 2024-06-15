@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.testfx.framework.junit5.ApplicationTest;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,6 +34,11 @@ public class CSVImporterTest extends ApplicationTest {
         stage.show();
     }
 
+    @AfterAll
+    public static void tearDownClass() {
+        Platform.exit();
+    }
+
     @Test
     void testImportCSV(@TempDir Path tempDir) throws IOException {
         File csvFile = tempDir.resolve("test.csv").toFile();
@@ -42,9 +49,16 @@ public class CSVImporterTest extends ApplicationTest {
             writer.write("Charlie,35,Chicago\n");
         }
 
-        Platform.runLater(() -> CSVImporter.importCSV(csvFile, tableView));
-
-        waitForFxEvents();
+        CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            CSVImporter.importCSV(csvFile, tableView);
+            latch.countDown();
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         assertEquals(3, tableView.getItems().size());
         assertEquals(4, tableView.getColumns().size()); // Includes row number column
@@ -70,14 +84,6 @@ public class CSVImporterTest extends ApplicationTest {
         assertEquals("Charlie", row3.get(0).get());
         assertEquals("35", row3.get(1).get());
         assertEquals("Chicago", row3.get(2).get());
-    }
-
-    private void waitForFxEvents() {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }
 

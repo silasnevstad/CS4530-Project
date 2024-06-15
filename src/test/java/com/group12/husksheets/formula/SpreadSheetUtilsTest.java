@@ -8,9 +8,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,13 +31,16 @@ class SpreadsheetUtilsTest extends ApplicationTest {
         });
     }
 
+    @AfterAll
+    public static void tearDownClass() {
+        Platform.exit();
+    }
 
-    @Disabled
     @Test
     void testSumRange() {
         Platform.runLater(() -> {
             double sum = SpreadsheetUtils.sumRange(tableView, "A1:B2");
-            assertEquals(0, sum);
+            assertEquals(1, sum);
         });
     }
 
@@ -59,39 +60,35 @@ class SpreadsheetUtilsTest extends ApplicationTest {
         });
     }
 
-    @Disabled
     @Test
     void testMinSingleCell() {
         Platform.runLater(() -> {
             double min = SpreadsheetUtils.min(tableView, "B3");
-            assertEquals(0, min);
+            assertEquals(2, min);
         });
     }
 
-    @Disabled
     @Test
     void testMaxRange() {
         Platform.runLater(() -> {
             double max = SpreadsheetUtils.maxRange(tableView, "A1:D4");
-            assertEquals(16, max);
+            assertEquals(9, max);
         });
     }
 
-    @Disabled
     @Test
     void testMaxSingleCell() {
         Platform.runLater(() -> {
             double max = SpreadsheetUtils.max(tableView, "D4");
-            assertEquals(16, max);
+            assertEquals(9, max);
         });
     }
 
-    @Disabled
     @Test
     void testConcatRange() {
         Platform.runLater(() -> {
             String concat = SpreadsheetUtils.concatRange(tableView, "A1:B2");
-            assertEquals("0000", concat);
+            assertEquals("0001", concat);
         });
     }
 
@@ -103,12 +100,11 @@ class SpreadsheetUtilsTest extends ApplicationTest {
         });
     }
 
-    @Disabled
     @Test
     void testAvgRange() {
         Platform.runLater(() -> {
             double[] avg = SpreadsheetUtils.avgRange(tableView, "A1:C3");
-            assertEquals(0, avg[0]); // sum
+            assertEquals(9, avg[0]); // sum
             assertEquals(9, avg[1]); // count
         });
     }

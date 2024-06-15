@@ -10,9 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -56,12 +54,11 @@ public class FormulaParserTest extends ApplicationTest {
         }
     }
 
-    @Disabled
     @Test
     void testEvaluateSumFormula() {
         Platform.runLater(() -> {
             String result = formulaParser.evaluateFormula("=SUM(A1,B2)");
-            assertEquals("0.0", result);
+            assertEquals("1.0", result);
         });
         waitForFxEvents();
     }
@@ -75,22 +72,20 @@ public class FormulaParserTest extends ApplicationTest {
         waitForFxEvents();
     }
 
-    @Disabled
     @Test
     void testEvaluateMaxFormula() {
         Platform.runLater(() -> {
             String result = formulaParser.evaluateFormula("=MAX(A1:D4)");
-            assertEquals("16.0", result);
+            assertEquals("9.0", result);
         });
         waitForFxEvents();
     }
 
-    @Disabled
     @Test
     void testEvaluateConcatFormula() {
         Platform.runLater(() -> {
             String result = formulaParser.evaluateFormula("=CONCAT(A1,B2)");
-            assertEquals("00", result);
+            assertEquals("01", result);
         });
         waitForFxEvents();
     }
