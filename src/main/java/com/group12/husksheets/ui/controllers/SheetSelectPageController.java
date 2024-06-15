@@ -103,7 +103,12 @@ public class SheetSelectPageController {
       Result result = backendService.getSheets(publisherName);
       List<String> accessibleSheets = new ArrayList<>();
       for (Argument arg : result.value) {
-        accessibleSheets.add(arg.sheet + " (owned by " + arg.publisher + ")");
+        if (publisherName.equals(arg.publisher)) {
+          accessibleSheets.add(arg.sheet + " (owned by you)");
+        } else {
+          accessibleSheets.add(arg.sheet + " (owned by " + arg.publisher + ")");
+        }
+
       }
       sheetsListView.getItems().addAll(accessibleSheets);
 
@@ -112,6 +117,9 @@ public class SheetSelectPageController {
           String selectedSheet = sheetsListView.getSelectionModel().getSelectedItem();
           String sheetName = selectedSheet.split(" \\(owned by ")[0];
           String sheetPublisher = selectedSheet.split(" \\(owned by ")[1].replace(")", "");
+          if (sheetPublisher.equals("you")) {
+            sheetPublisher = publisherName;
+          }
           boolean isOwned = sheetPublisher.equals(publisherName);
           openSheet(sheetPublisher, sheetName, isOwned);
         }
@@ -150,6 +158,9 @@ public class SheetSelectPageController {
     if (selectedSheet != null) {
       String sheetName = selectedSheet.split(" \\(owned by ")[0];
       String sheetPublisher = selectedSheet.split(" \\(owned by ")[1].replace(")", "");
+      if (sheetPublisher.equals("you")) {
+        sheetPublisher = publisherName;
+      }
       if (sheetPublisher.equals(publisherName)) {
         try {
           Result result = backendService.deleteSheet(publisherName, sheetName);

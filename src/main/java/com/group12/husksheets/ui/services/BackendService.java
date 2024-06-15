@@ -16,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
-// FIXME: Untested
 public class BackendService {
     private final String BASE_URL = "https://localhost:9443/api/v1";
 //    private final String BASE_URL = "https://husksheets.fly.dev:443/api/v1";
@@ -118,6 +117,23 @@ public class BackendService {
     }
 
     /**
+     * Gets all sheets from all publishers
+     *
+     * @return The result containing the list of all sheets
+     * @throws Exception If the request fails
+     */
+    public Result getAllSheets() throws Exception {
+        Result publishersResult = getPublishers();
+        List<Argument> publishers = publishersResult.value;
+        List<Argument> allSheets = new java.util.ArrayList<>(List.of());
+        for (Argument publisher : publishers) {
+            Result sheetsResult = getSheets(publisher.publisher);
+            allSheets.addAll(sheetsResult.value);
+        }
+        return new Result(true, null, allSheets);
+    }
+
+    /**
      * Gets the data for a sheet
      *
      * @param publisher The publisher to get the sheet data for (owner of the sheet)
@@ -147,22 +163,58 @@ public class BackendService {
     public Result getAllUpdates(String publisher, String sheet, String id) throws Exception {
         Result subscriberUpdatesRes = getUpdatesForPublished(publisher, sheet, id);
         Result publisherUpdatesRes = getUpdatesForSubscription(publisher, sheet, id);
-        Argument subscriberUpdates = subscriberUpdatesRes.value.get(0);
-        Argument publisherUpdates = publisherUpdatesRes.value.get(0);
 
-        String combinedPayload = (subscriberUpdates.payload != null ? subscriberUpdates.payload : "")
-                + (publisherUpdates.payload != null ? publisherUpdates.payload : "");
-
-        String lastId = null;
-        if (subscriberUpdates.id != null && publisherUpdates.id != null) {
-            lastId = subscriberUpdates.id.compareTo(publisherUpdates.id) > 0 ? subscriberUpdates.id : publisherUpdates.id;
-        } else if (subscriberUpdates.id != null) {
-            lastId = subscriberUpdates.id;
-        } else if (publisherUpdates.id != null) {
-            lastId = publisherUpdates.id;
+        if (!subscriberUpdatesRes.success || !publisherUpdatesRes.success) {
+            return new Result(false, null, null);
         }
 
+        Argument subscriberUpdates = null;
+        Argument publisherUpdates = null;
+
+        if (!subscriberUpdatesRes.value.isEmpty()) {
+            subscriberUpdates = subscriberUpdatesRes.value.get(0);
+        }
+
+        if (!publisherUpdatesRes.value.isEmpty()) {
+            publisherUpdates = publisherUpdatesRes.value.get(0);
+        }
+
+        String combinedPayload = "";
+        if (subscriberUpdates != null && subscriberUpdates.payload != null) {
+            combinedPayload += subscriberUpdates.payload;
+        }
+        if (publisherUpdates != null && publisherUpdates.payload != null) {
+            combinedPayload += publisherUpdates.payload;
+        }
+
+        String lastId = getLastId(subscriberUpdates, publisherUpdates);
+
         return new Result(true, lastId, List.of(new Argument(publisher, sheet, lastId, combinedPayload)));
+    }
+
+    /**
+     * Gets the last update id from two updates
+     *
+     * @param subscriberUpdates updates from the subscriber
+     * @param publisherUpdates updates from the publisher
+     * @return
+     */
+    private static String getLastId(Argument subscriberUpdates, Argument publisherUpdates) {
+        String lastId = null;
+        if (subscriberUpdates != null && publisherUpdates != null) {
+            if (subscriberUpdates.id != null && publisherUpdates.id != null) {
+                lastId = subscriberUpdates.id.compareTo(publisherUpdates.id) > 0 ? subscriberUpdates.id : publisherUpdates.id;
+            } else if (subscriberUpdates.id != null) {
+                lastId = subscriberUpdates.id;
+            } else if (publisherUpdates.id != null) {
+                lastId = publisherUpdates.id;
+            }
+        } else if (subscriberUpdates != null && subscriberUpdates.id != null) {
+            lastId = subscriberUpdates.id;
+        } else if (publisherUpdates != null && publisherUpdates.id != null) {
+            lastId = publisherUpdates.id;
+        }
+        return lastId;
     }
 
     /**
