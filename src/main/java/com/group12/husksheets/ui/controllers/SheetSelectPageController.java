@@ -35,6 +35,7 @@ public class SheetSelectPageController {
   private Main mainApp; // Reference to the Main application
 
   private BackendService backendService;
+  private SheetView sheetView;
 
   // Owner: Nicholas Gillespie
   public SheetSelectPageController() {
@@ -56,7 +57,7 @@ public class SheetSelectPageController {
     this.publisherName = publisherName;
   }
 
-  // Owner: Nicholas Gillespie
+  // Owner: Silas Nevstad
   public void setBackendService(BackendService backendService) {
     this.backendService = backendService;
   }
@@ -97,7 +98,7 @@ public class SheetSelectPageController {
     }
   }
 
-  // Owner: Nicholas Gillespie
+  // Owner: Silas Nevstad, Zach Pulichino Nicholas Gillespie
   private void fetchSheets() {
     try {
       Result result = backendService.getSheets(publisherName);
@@ -130,7 +131,7 @@ public class SheetSelectPageController {
     }
   }
 
-  // Owner: Zach Pulichino
+  // Owner: Zach Pulichino, Silas Nevstad
   public void newSheet() {
     TextInputDialog dialog = new TextInputDialog("NewSheet");
     dialog.setTitle("Create New Sheet");
@@ -180,7 +181,9 @@ public class SheetSelectPageController {
 
   // Owner: Zach Pulichino
   private void openSheet(String publisher, String sheet, boolean isOwned) {
-    mainApp.showSpreadsheetView(stage, publisher, sheet, isOwned);
+    sheetView = new SheetView();
+    sheetView.setBackendService(backendService);
+    sheetView.showSpreadsheetView(stage, publisher, sheet, isOwned);
   }
 
   // Owner: Zach Pulichino

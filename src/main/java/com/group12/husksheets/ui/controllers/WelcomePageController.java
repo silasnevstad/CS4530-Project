@@ -1,5 +1,7 @@
 package com.group12.husksheets.ui.controllers;
 
+// Owner: Silas Nevstad, Nicholas Gillespie, Zach Pulichino
+
 import com.group12.husksheets.ui.Main;
 import com.group12.husksheets.ui.models.WelcomePage;
 import com.group12.husksheets.server.services.UserService;
@@ -33,11 +35,10 @@ public class WelcomePageController {
   @FXML
   private TextField passwordEntered;
 
-  public WelcomePageController(Stage stage, Main mainApp) {
+  public WelcomePageController(Stage stage) {
     this.stage = stage;
     this.userService = new UserService();
     this.welcomePage = new WelcomePage(this);
-    this.mainApp = mainApp;
   }
 
   // Owner: Nicholas Gillespie
@@ -63,10 +64,10 @@ public class WelcomePageController {
     });
   }
 
-  // Owner: Zach Pulichino
+  // Owner: Zach Pulichino, Silas Nevstad
   public void tryUserLogin(String publisherName, String username, String password) throws Exception {
     String authHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-    if (userService.isValidUser(authHeader)) {
+    if (userService.isValidAuth(authHeader)) {
       this.backendService = new BackendService(username, password);
       if (backendService.doesPublisherExist(publisherName)) {
         SheetSelectPageController controller = new SheetSelectPageController();
@@ -81,7 +82,7 @@ public class WelcomePageController {
     }
   }
 
-  // Owner: Nicholas Gillespie
+  // Owner: Nicholas Gillespie, Silas Nevstad
   public void acceptUser(String publisherName, SheetSelectPageController controller) {
     createSheetSelectPage(publisherName, controller);
   }
@@ -92,13 +93,12 @@ public class WelcomePageController {
     passwordEntered.clear();
   }
 
-  // Owner: Zach Pulichino
+  // Owner: Zach Pulichino, Silas Nevstad
   public void createSheetSelectPage(String publisherName, SheetSelectPageController controller) {
     try {
       controller.setPublisherName(publisherName);
       controller.setStage(stage);
       controller.setBackendService(backendService);
-      controller.setMainApp(mainApp);
       controller.run();
     } catch (Exception e) {
       e.printStackTrace();
