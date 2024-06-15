@@ -99,33 +99,36 @@ public class SheetSelectPageController {
   }
 
   // Owner: Silas Nevstad, Zach Pulichino Nicholas Gillespie
+ /**
+   * Fetches the sheets that are available to the current publisher from the server and 
+   * adds them to the sheetsListView to display to the user
+   */
   private void fetchSheets() {
     try {
+      // Asks server for sheets available to the publisher
       Result result = backendService.getSheets(publisherName);
+
+      // Adds available sheets to the sheetsListView to display to user
       List<String> accessibleSheets = new ArrayList<>();
       for (Argument arg : result.value) {
-        if (publisherName.equals(arg.publisher)) {
-          accessibleSheets.add(arg.sheet + " (owned by you)");
-        } else {
-          accessibleSheets.add(arg.sheet + " (owned by " + arg.publisher + ")");
-        }
-
+        accessibleSheets.add(arg.sheet + " (owned by " + arg.publisher + ")");
       }
       sheetsListView.getItems().addAll(accessibleSheets);
 
+      // Set action to take when each sheet is clicked by user
       sheetsListView.setOnMouseClicked(event -> {
         if (event.getClickCount() == 2) {
+          // Get the sheet name
           String selectedSheet = sheetsListView.getSelectionModel().getSelectedItem();
           String sheetName = selectedSheet.split(" \\(owned by ")[0];
           String sheetPublisher = selectedSheet.split(" \\(owned by ")[1].replace(")", "");
-          if (sheetPublisher.equals("you")) {
-            sheetPublisher = publisherName;
-          }
           boolean isOwned = sheetPublisher.equals(publisherName);
+          // Open the sheet
           openSheet(sheetPublisher, sheetName, isOwned);
         }
       });
 
+      // Throws error if fetching sheets from server is unsuccessful
     } catch (Exception e) {
       showError("Unable to fetch sheets", e.getMessage());
     }
