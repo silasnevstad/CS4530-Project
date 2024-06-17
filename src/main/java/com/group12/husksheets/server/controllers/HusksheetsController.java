@@ -45,7 +45,7 @@ public class HusksheetsController {
         before(this::beforeFilter);
 
         // API endpoints
-        post("/api/v1/register", this::handleRegister);
+        get("/api/v1/register", this::handleRegister);
         get("/api/v1/getPublishers", this::handleGetPublishers);
         post("/api/v1/createSheet", this::handleCreateSheet);
         post("/api/v1/deleteSheet", this::handleDeleteSheet);
