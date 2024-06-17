@@ -33,7 +33,7 @@
                                         </HBox>
                                         <VBox prefHeight="51.0" prefWidth="210.0">
                                             <children>
-                                                <TextField fx:id="publisherNameEntered" prefHeight="26.0" prefWidth="139.0" promptText="Publisher Name:" />
+<!--                                                <TextField fx:id="publisherNameEntered" prefHeight="26.0" prefWidth="139.0" promptText="Publisher Name:" />-->
                                                 <TextField fx:id="usernameEntered" prefHeight="26.0" prefWidth="139.0" promptText="Username:" />
                                                 <TextField fx:id="passwordEntered" prefHeight="26.0" prefWidth="139.0" promptText="Password:" />
                                             </children>

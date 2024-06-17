@@ -64,17 +64,18 @@ public class HusksheetsController {
      * @return JSON response indicating the success or failure of the operation.
      */
     public String handleRegister(Request req, Response res) {
-        Argument arg = gson.fromJson(req.body(), Argument.class);
-        if (publisherService.isInvalidInput(arg.publisher)) {
-            logger.warn("Invalid input for publisher registration: {}", arg.publisher);
+        String authHeader = req.headers("Authorization");
+        String publisherName = userService.getUsername(authHeader);
+        if (publisherService.isInvalidInput(publisherName)) {
+            logger.warn("Invalid input for publisher registration: {}", publisherName);
             return gson.toJson(new Result(false, "Invalid publisher name", null));
         }
-        boolean success = publisherService.addPublisher(arg.publisher);
+        boolean success = publisherService.addPublisher(publisherName);
         if (!success) {
-            logger.warn("Publisher {} already exists", arg.publisher);
+            logger.warn("Publisher {} already exists", publisherName);
             return gson.toJson(new Result(false, "Publisher already exists", null));
         }
-        logger.info("Publisher {} registered", arg.publisher);
+        logger.info("Publisher {} registered", publisherName);
         return gson.toJson(new Result(true, "Publisher registered", null));
     }
 

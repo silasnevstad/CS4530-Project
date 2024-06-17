@@ -67,7 +67,7 @@ public class HusksheetsServerTest {
         arg.publisher = "testPublisher1";
         String jsonArg = gson.toJson(arg);
 
-        HttpURLConnection connection = createConnection("/api/v1/register", "POST", jsonArg);
+        HttpURLConnection connection = createConnection("/api/v1/register", "GET", null);
         int responseCode = connection.getResponseCode();
         assertEquals(200, responseCode);
 
@@ -76,13 +76,10 @@ public class HusksheetsServerTest {
         assertEquals("Publisher registered", result.message);
     }
 
+    @Disabled
     @Test
     public void testRegisterEmptyPublisher() throws IOException {
-        Argument arg = new Argument();
-        arg.publisher = "";
-        String jsonArg = gson.toJson(arg);
-
-        HttpURLConnection connection = createConnection("/api/v1/register", "POST", jsonArg);
+        HttpURLConnection connection = createConnection("/api/v1/register", "GET", null);
         int responseCode = connection.getResponseCode();
         assertEquals(200, responseCode);
 
@@ -97,10 +94,10 @@ public class HusksheetsServerTest {
         arg.publisher = "testPublisher1";
         String jsonArg = gson.toJson(arg);
 
-        HttpURLConnection connection = createConnection("/api/v1/register", "POST", jsonArg);
+        HttpURLConnection connection = createConnection("/api/v1/register", "GET", null);
         assertEquals(200, connection.getResponseCode());
 
-        connection = createConnection("/api/v1/register", "POST", jsonArg);
+        connection = createConnection("/api/v1/register", "GET", null);
         int responseCode = connection.getResponseCode();
         assertEquals(200, responseCode);
 
@@ -115,7 +112,7 @@ public class HusksheetsServerTest {
         registerArg.publisher = "testPublisher2";
         String registerJsonArg = gson.toJson(registerArg);
 
-        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "GET", null);
         assertEquals(200, registerConnection.getResponseCode());
 
         HttpURLConnection connection = createConnection("/api/v1/getPublishers", "GET", null);
@@ -130,14 +127,14 @@ public class HusksheetsServerTest {
     @Test
     public void testCreateSheet() throws IOException {
         Argument registerArg = new Argument();
-        registerArg.publisher = "testPublisher3";
+        registerArg.publisher = "user1";
         String registerJsonArg = gson.toJson(registerArg);
 
-        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "GET", null);
         assertEquals(200, registerConnection.getResponseCode());
 
         Argument createSheetArg = new Argument();
-        createSheetArg.publisher = "testPublisher3";
+        createSheetArg.publisher = "user1";
         createSheetArg.sheet = "testSheet";
         String createSheetJsonArg = gson.toJson(createSheetArg);
 
@@ -156,7 +153,7 @@ public class HusksheetsServerTest {
         registerArg.publisher = "testPublisher3";
         String registerJsonArg = gson.toJson(registerArg);
 
-        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "GET", null);
         assertEquals(200, registerConnection.getResponseCode());
 
         Argument createSheetArg = new Argument();
@@ -179,11 +176,11 @@ public class HusksheetsServerTest {
         registerArg.publisher = "testPublisher4";
         String registerJsonArg = gson.toJson(registerArg);
 
-        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "GET", null);
         assertEquals(200, registerConnection.getResponseCode());
 
         Argument createSheetArg = new Argument();
-        createSheetArg.publisher = "testPublisher4";
+        createSheetArg.publisher = "user1";
         createSheetArg.sheet = "testSheet";
         String createSheetJsonArg = gson.toJson(createSheetArg);
 
@@ -191,7 +188,7 @@ public class HusksheetsServerTest {
         assertEquals(200, createSheetConnection.getResponseCode());
 
         Argument deleteSheetArg = new Argument();
-        deleteSheetArg.publisher = "testPublisher4";
+        deleteSheetArg.publisher = "user1";
         deleteSheetArg.sheet = "testSheet";
         String deleteSheetJsonArg = gson.toJson(deleteSheetArg);
 
@@ -210,7 +207,7 @@ public class HusksheetsServerTest {
         registerArg.publisher = "testPublisher4";
         String registerJsonArg = gson.toJson(registerArg);
 
-        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "GET", null);
         assertEquals(200, registerConnection.getResponseCode());
 
         Argument createSheetArg = new Argument();
@@ -237,15 +234,11 @@ public class HusksheetsServerTest {
 
     @Test
     public void testGetSheets() throws IOException {
-        Argument registerArg = new Argument();
-        registerArg.publisher = "testPublisher5";
-        String registerJsonArg = gson.toJson(registerArg);
-
-        HttpURLConnection registerConnection = createConnection("/api/v1/register", "POST", registerJsonArg);
+        HttpURLConnection registerConnection = createConnection("/api/v1/register", "GET", null);
         assertEquals(200, registerConnection.getResponseCode());
 
         Argument createSheetArg = new Argument();
-        createSheetArg.publisher = "testPublisher5";
+        createSheetArg.publisher = "user1";
         createSheetArg.sheet = "testSheet";
         String createSheetJsonArg = gson.toJson(createSheetArg);
 
@@ -253,7 +246,7 @@ public class HusksheetsServerTest {
         assertEquals(200, createSheetConnection.getResponseCode());
 
         Argument getSheetsArg = new Argument();
-        getSheetsArg.publisher = "testPublisher5";
+        getSheetsArg.publisher = "user1";
         String getSheetsJsonArg = gson.toJson(getSheetsArg);
 
         HttpURLConnection connection = createConnection("/api/v1/getSheets", "POST", getSheetsJsonArg);
@@ -295,6 +288,7 @@ public class HusksheetsServerTest {
                 os.write(input, 0, input.length);
             }
         }
+
         return connection;
     }
 

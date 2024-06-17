@@ -54,4 +54,22 @@ public class UserService {
     private boolean checkCredentials(String username, String password) {
         return users.containsKey(username) && users.get(username).equals(password);
     }
+
+    public String getUsername(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Basic ")) {
+            return null;
+        }
+        try {
+            String decodedAuth = new String(
+                    Base64.getDecoder().decode(authHeader.replace("Basic ", ""))
+            );
+            String[] creds = decodedAuth.split(":");
+            if (creds.length != 2) {
+                return null;
+            }
+            return creds[0];
+        } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+    }
 }

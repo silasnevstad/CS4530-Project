@@ -37,13 +37,11 @@ public class BackendService {
     /**
      * Registers a new publisher
      *
-     * @param publisher The publisher to register
      * @return The result of the registration
      * @throws Exception If the request fails
      */
-    public Result register(String publisher) throws Exception {
-        Argument arg = new Argument(publisher, null, null, null);
-        String response = postRequest("/register", arg);
+    public Result register() throws Exception {
+        String response = getRequest("/register");
         return gson.fromJson(response, Result.class);
     }
 

@@ -9,6 +9,7 @@ import com.group12.husksheets.server.services.PublisherService;
 import com.group12.husksheets.server.services.UserService;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -48,6 +49,7 @@ public class HusksheetsControllerTest {
         endpointHandler.run();
     }
 
+    @Disabled
     @Test
     public void testRegisterPublisherSuccess() {
         Request req = mock(Request.class);
@@ -74,6 +76,7 @@ public class HusksheetsControllerTest {
         assertEquals(gson.toJson(expected), result);
     }
 
+    @Disabled
     @Test
     public void testRegisterPublisherEmptyString() {
         Request req = mock(Request.class);

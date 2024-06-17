@@ -82,7 +82,7 @@ class WelcomePageControllerMock extends WelcomePageController {
             if (backendService.doesPublisherExist(publisherName)) {
                 acceptUser(publisherName);
             } else {
-                backendService.register(publisherName);
+                backendService.register();
                 acceptUser(publisherName);
             }
         } else {

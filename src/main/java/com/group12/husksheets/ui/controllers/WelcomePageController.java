@@ -27,9 +27,6 @@ public class WelcomePageController {
   private Button loginButton;
 
   @FXML
-  private TextField publisherNameEntered;
-
-  @FXML
   private TextField usernameEntered;
 
   @FXML
@@ -57,7 +54,7 @@ public class WelcomePageController {
   private void initializeButtonActions() {
     loginButton.setOnAction(e -> {
       try {
-        tryUserLogin(publisherNameEntered.getText(), usernameEntered.getText(), passwordEntered.getText());
+        tryUserLogin(usernameEntered.getText(), passwordEntered.getText());
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
@@ -65,17 +62,17 @@ public class WelcomePageController {
   }
 
   // Owner: Zach Pulichino, Silas Nevstad
-  public void tryUserLogin(String publisherName, String username, String password) throws Exception {
+  public void tryUserLogin(String username, String password) throws Exception {
     String authHeader = "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
     if (userService.isValidAuth(authHeader)) {
       this.backendService = new BackendService(username, password);
-      if (backendService.doesPublisherExist(publisherName)) {
+      if (backendService.doesPublisherExist(username)) {
         SheetSelectPageController controller = new SheetSelectPageController();
-        acceptUser(publisherName, controller);
+        acceptUser(username, controller);
       } else {
-        backendService.register(publisherName);
+        backendService.register();
         SheetSelectPageController controller = new SheetSelectPageController();
-        acceptUser(publisherName, controller);
+        acceptUser(username, controller);
       }
     } else {
       rejectUser();

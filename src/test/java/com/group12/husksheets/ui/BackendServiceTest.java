@@ -28,9 +28,9 @@ class BackendServiceTest {
     @Test
     void testRegister_Success() throws Exception {
         Result registerResult = new Result(true, "Publisher registered", null);
-        doReturn(registerResult).when(backendServiceSpy).register(anyString());
+        doReturn(registerResult).when(backendServiceSpy).register();
 
-        Result result = backendServiceSpy.register("newPublisher");
+        Result result = backendServiceSpy.register();
 
         assertTrue(result.success);
         assertEquals("Publisher registered", result.message);
@@ -39,9 +39,9 @@ class BackendServiceTest {
     @Test
     void testRegister_Failure() throws Exception {
         Result registerResult = new Result(false, "Publisher already exists", null);
-        doReturn(registerResult).when(backendServiceSpy).register(anyString());
+        doReturn(registerResult).when(backendServiceSpy).register();
 
-        Result result = backendServiceSpy.register("existingPublisher");
+        Result result = backendServiceSpy.register();
 
         assertFalse(result.success);
         assertEquals("Publisher already exists", result.message);
