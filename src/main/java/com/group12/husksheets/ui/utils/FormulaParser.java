@@ -132,6 +132,10 @@ public class FormulaParser {
      */
     //Zach and Jason
     public static int[] parseCellReference(String cellRef) {
+        // makes sure the Cell Reference starts with a '$'
+        if (!cellRef.startsWith("$")) {
+            return "#REF!";
+        }
         int colIndex = ColumnNameUtils.getColumnIndex(cellRef.replaceAll("[^A-Z]", ""));
         int rowIndex = Integer.parseInt(cellRef.replaceAll("[^0-9]", "")) - 1;
         return new int[]{rowIndex, colIndex};
